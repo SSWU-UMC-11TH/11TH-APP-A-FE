@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MovieLogApp());
@@ -12,9 +13,7 @@ class MovieLogApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'MovieLog',
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       home: const StartScreen(),
     );
   }
