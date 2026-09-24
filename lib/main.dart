@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'theme/app_theme.dart';
-import 'profile_screen.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
