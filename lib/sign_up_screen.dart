@@ -32,6 +32,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     super.dispose();
   }
 
+  bool get _canSubmit =>
+      _nicknameController.text.trim().length >= 2 &&
+      _emailRegExp.hasMatch(_emailController.text.trim()) &&
+      _passwordController.text.length >= 8 &&
+      _agreedToTerms;
+
+  void _submit() {
+    final isValid = _formKey.currentState?.validate() ?? false;
+    if (!isValid) return;
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('가입이 완료되었습니다.')));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +140,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _canSubmit ? _submit : null,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
+                  child: const Text('가입하기'),
                 ),
               ],
             ),
