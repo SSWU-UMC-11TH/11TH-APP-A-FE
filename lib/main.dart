@@ -5,8 +5,6 @@ import 'theme/app_theme.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'sign_up_screen.dart';
-
 void main() {
   runApp(const MovieLogApp());
 }
