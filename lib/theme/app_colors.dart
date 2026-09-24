@@ -17,4 +17,12 @@ class AppColors {
 
   static const Color onPrimary = Color(0xFFFFFFFF);
   static const Color onSurface = Color(0xFF1C1B1F);
+
+  // Input
+  static const Color inputFill = Color(0xFFF3F1EE);
+  static const Color inputBorder = Color(0xFFD9D6DC);
+
+  // Error
+  static const Color error = Color(0xFFB3261E);
+  static const Color errorContainer = Color(0xFFF9DEDC);
 }

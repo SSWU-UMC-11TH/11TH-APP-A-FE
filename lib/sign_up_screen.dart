@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'common_app_bar.dart';
+import 'theme/app_colors.dart';
 import 'theme/app_text_styles.dart';
 
 final _emailRegExp = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
@@ -177,6 +178,17 @@ class _LabeledTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final text = controller.text;
+    final hasError = text.isNotEmpty && validator(text) != null;
+    final isValid = text.isNotEmpty && !hasError;
+
+    OutlineInputBorder border(Color color, [double width = 1]) {
+      return OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: color, width: width),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -185,7 +197,25 @@ class _LabeledTextField extends StatelessWidget {
         TextFormField(
           controller: controller,
           focusNode: focusNode,
-          decoration: InputDecoration(hintText: hintText),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
+            filled: true,
+            fillColor: hasError
+                ? AppColors.errorContainer
+                : AppColors.inputFill,
+            contentPadding: const EdgeInsets.all(16),
+            suffixIcon: hasError
+                ? const Icon(Icons.error_outline, color: AppColors.error)
+                : isValid
+                ? const Icon(Icons.check_circle, color: AppColors.primary)
+                : null,
+            enabledBorder: border(AppColors.inputBorder),
+            focusedBorder: border(AppColors.primary, 2),
+            errorBorder: border(AppColors.error),
+            focusedErrorBorder: border(AppColors.error, 2),
+            errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
+          ),
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           obscureText: obscureText,
