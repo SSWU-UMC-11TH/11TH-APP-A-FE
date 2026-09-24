@@ -73,65 +73,98 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return Scaffold(
       appBar: CommonAppBar(title: '회원가입', centerTitle: true, onBack: () {}),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const _SignUpHeader(),
-                const SizedBox(height: 40),
-                _LabeledTextField(
-                  label: '닉네임',
-                  hintText: '닉네임을 입력해주세요',
-                  controller: _nicknameController,
-                  textInputAction: TextInputAction.next,
-                  validator: _validateNickname,
-                  onChanged: (_) => setState(() {}),
-                  onFieldSubmitted: (_) => _emailFocusNode.requestFocus(),
-                ),
-                const SizedBox(height: 16),
-                _LabeledTextField(
-                  label: '이메일',
-                  hintText: '이메일 주소를 입력해주세요',
-                  controller: _emailController,
-                  focusNode: _emailFocusNode,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  validator: _validateEmail,
-                  onChanged: (_) => setState(() {}),
-                  onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
-                ),
-                const SizedBox(height: 16),
-                _LabeledTextField(
-                  label: '비밀번호',
-                  hintText: '비밀번호를 입력해주세요',
-                  controller: _passwordController,
-                  focusNode: _passwordFocusNode,
-                  obscureText: true,
-                  textInputAction: TextInputAction.done,
-                  validator: _validatePassword,
-                  onChanged: (_) => setState(() {}),
-                  onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
-                ),
-                const SizedBox(height: 32),
-                _TermsCheckbox(
-                  value: _agreedToTerms,
-                  onChanged: (value) => setState(() => _agreedToTerms = value),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _canSubmit ? _submit : null,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(56),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxFormWidth = constraints.maxWidth >= 700
+                ? 560.0
+                : double.infinity;
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: maxFormWidth,
+                    minHeight: constraints.maxHeight - 48,
                   ),
-                  child: const Text('가입하기'),
+                  child: IntrinsicHeight(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _SignUpHeader(),
+                          const SizedBox(height: 40),
+                          _LabeledTextField(
+                            label: '닉네임',
+                            hintText: '닉네임을 입력해주세요',
+                            controller: _nicknameController,
+                            textInputAction: TextInputAction.next,
+                            validator: _validateNickname,
+                            onChanged: (_) => setState(() {}),
+                            onFieldSubmitted: (_) =>
+                                _emailFocusNode.requestFocus(),
+                          ),
+                          const SizedBox(height: 16),
+                          _LabeledTextField(
+                            label: '이메일',
+                            hintText: '이메일 주소를 입력해주세요',
+                            controller: _emailController,
+                            focusNode: _emailFocusNode,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            validator: _validateEmail,
+                            onChanged: (_) => setState(() {}),
+                            onFieldSubmitted: (_) =>
+                                _passwordFocusNode.requestFocus(),
+                          ),
+                          const SizedBox(height: 16),
+                          _LabeledTextField(
+                            label: '비밀번호',
+                            hintText: '비밀번호를 입력해주세요',
+                            controller: _passwordController,
+                            focusNode: _passwordFocusNode,
+                            obscureText: true,
+                            textInputAction: TextInputAction.done,
+                            validator: _validatePassword,
+                            onChanged: (_) => setState(() {}),
+                            onFieldSubmitted: (_) =>
+                                FocusScope.of(context).unfocus(),
+                          ),
+                          const SizedBox(height: 32),
+                          const Spacer(),
+                          _TermsCheckbox(
+                            value: _agreedToTerms,
+                            onChanged: (value) =>
+                                setState(() => _agreedToTerms = value),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _canSubmit ? _submit : null,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(56),
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.onPrimary,
+                              disabledBackgroundColor: AppColors.primary
+                                  .withValues(alpha: 0.3),
+                              disabledForegroundColor: AppColors.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('가입하기'),
+                          ),
+                          const SizedBox(height: 24),
+                          const _LoginPrompt(),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -246,6 +279,30 @@ class _TermsCheckbox extends StatelessWidget {
         GestureDetector(
           onTap: () => onChanged(!value),
           child: const Text('필수 약관에 동의합니다', style: AppTextStyles.bodyMedium),
+        ),
+      ],
+    );
+  }
+}
+
+class _LoginPrompt extends StatelessWidget {
+  const _LoginPrompt();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('이미 계정이 있나요?', style: AppTextStyles.bodySmall),
+        TextButton(
+          onPressed: () {},
+          child: const Text(
+            '로그인',
+            style: TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ],
     );
