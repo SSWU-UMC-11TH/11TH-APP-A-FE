@@ -107,6 +107,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onChanged: (_) => setState(() {}),
                   onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                 ),
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _agreedToTerms,
+                      onChanged: (value) {
+                        setState(() => _agreedToTerms = value ?? false);
+                      },
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() => _agreedToTerms = !_agreedToTerms);
+                      },
+                      child: const Text(
+                        '필수 약관에 동의합니다',
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
