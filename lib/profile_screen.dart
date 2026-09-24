@@ -110,11 +110,11 @@ class StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border.all(color: AppColors.violet),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.violet.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
