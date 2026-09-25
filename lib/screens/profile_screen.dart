@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/common_app_bar.dart';
+import '../widgets/edit_profile_button.dart';
+import '../widgets/favorite_genres.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_stats.dart';
 
@@ -25,11 +27,15 @@ class ProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(height: 24),
         ProfileHeader(),
         SizedBox(height: 24),
+        Center(child: EditProfileButton()),
+        SizedBox(height: 32),
         ProfileStats(),
+        FavoriteGenres(),
       ],
     );
   }
