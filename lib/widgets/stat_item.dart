@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+
 class StatItem extends StatelessWidget {
   const StatItem({
     super.key,
@@ -12,24 +15,23 @@ class StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border.all(color: colors.primary),
+        color: AppColors.surfaceLow,
+        border: Border.all(color: AppColors.lavender),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Text(value, style: textTheme.titleLarge),
+          Text(label, style: AppTextStyles.bodyMedium),
           const SizedBox(height: 4),
-          Text(label),
+          Text(
+            value,
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.deepViolet,
+            ),
+          ),
         ],
       ),
     );
