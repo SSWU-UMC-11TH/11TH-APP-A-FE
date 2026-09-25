@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import 'screens/profile_screen.dart';
+import 'theme/app_colors.dart';
+import 'theme/app_text_styles.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -24,10 +30,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'MovieLog',
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
-      home: const StartScreen(),
+      theme: AppTheme.light,
+      // 시작 화면을 확인하려면 StartScreen()으로 변경
+      home: const ProfileScreen(),
     );
   }
 }
@@ -46,7 +51,6 @@ class StartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF8F5),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(32, 24, 32, 24),
@@ -57,55 +61,40 @@ class StartScreen extends StatelessWidget {
               const Text(
                 'FLUTTER 0주차',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 1.2,
-                  color: Color(0xFF49454F),
-                ),
+                style: AppTextStyles.labelSmall,
               ),
               const SizedBox(height: 56),
-              const Icon(
-                Icons.movie_outlined,
-                size: 72,
-                color: Color(0xFF6750A4),
+              SvgPicture.asset(
+                'assets/logos/movielog_logo.svg',
+                width: 72,
+                height: 72,
+                semanticsLabel: 'MovieLog 로고',
               ),
               const SizedBox(height: 64),
               const Text(
                 '영화의 순간을\n기록하세요',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  height: 1.3,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1C1B1F),
-                ),
+                style: AppTextStyles.titleLarge,
               ),
               const SizedBox(height: 8),
               const Text(
                 '보고 싶은 영화부터 나만의 평점까지\n한곳에서 관리해요',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.45,
-                  color: Color(0xFF49454F),
-                ),
+                style: AppTextStyles.bodyMedium,
               ),
               const Spacer(),
               ElevatedButton(
                 // 화면 이동은 아직 구현하지 않음
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4F3A8A),
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.deepViolet,
+                  foregroundColor: AppColors.white,
                   elevation: 0,
                   minimumSize: const Size.fromHeight(56),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  textStyle: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  textStyle: AppTextStyles.labelLarge,
                 ),
                 child: const Text('시작하기'),
               ),
