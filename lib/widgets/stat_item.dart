@@ -24,12 +24,13 @@ class StatItem extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(label, style: AppTextStyles.bodyMedium),
-          const SizedBox(height: 4),
+          Text(label, style: AppTextStyles.labelMedium),
+          const SizedBox(height: 8),
           Text(
             value,
-            style: AppTextStyles.titleMedium.copyWith(
+            style: AppTextStyles.titleSmall.copyWith(
               color: AppColors.deepViolet,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],

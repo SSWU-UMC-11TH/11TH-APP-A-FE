@@ -11,12 +11,18 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ClipOval(
-          child: Image.asset(
-            'assets/images/profile/profile_movielog.jpg',
-            width: 88,
-            height: 88,
-            fit: BoxFit.cover,
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.lightViolet, width: 2),
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/profile/profile_movielog.jpg',
+              width: 124,
+              height: 124,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -36,15 +42,18 @@ class ProfileHeader extends StatelessWidget {
             const SizedBox(width: 8),
             const Text(
               '무비러버',
-              style: AppTextStyles.titleMedium,
+              style: AppTextStyles.titleSmall,
             ),
           ],
         ),
         const SizedBox(height: 8),
         Text(
-          '좋아하는 영화를 기록하고 있어요',
+          '매주 주말엔 영화관으로 출근하는 프로 관람객. 좋은 영화를 보고 기록하는 것을 좋아합니다.',
+          textAlign: TextAlign.center,
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.darkGray,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0,
           ),
         ),
       ],

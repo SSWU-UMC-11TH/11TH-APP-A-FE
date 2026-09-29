@@ -26,17 +26,19 @@ class ProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(height: 24),
-        ProfileHeader(),
-        SizedBox(height: 24),
-        Center(child: EditProfileButton()),
-        SizedBox(height: 32),
-        ProfileStats(),
-        FavoriteGenres(),
-      ],
+    return const SingleChildScrollView(
+      padding: EdgeInsets.symmetric(vertical: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ProfileHeader(),
+          SizedBox(height: 24),
+          Center(child: EditProfileButton()),
+          SizedBox(height: 32),
+          ProfileStats(),
+          FavoriteGenres(),
+        ],
+      ),
     );
   }
 }

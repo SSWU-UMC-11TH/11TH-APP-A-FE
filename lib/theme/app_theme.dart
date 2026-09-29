@@ -24,9 +24,11 @@ abstract final class AppTheme {
     textTheme: const TextTheme(
       titleLarge: AppTextStyles.titleLarge,
       titleMedium: AppTextStyles.titleMedium,
+      titleSmall: AppTextStyles.titleSmall,
       bodyLarge: AppTextStyles.bodyLarge,
       bodyMedium: AppTextStyles.bodyMedium,
       labelLarge: AppTextStyles.labelLarge,
+      labelMedium: AppTextStyles.labelMedium,
       labelSmall: AppTextStyles.labelSmall,
     ),
     scaffoldBackgroundColor: AppColors.warmWhite,

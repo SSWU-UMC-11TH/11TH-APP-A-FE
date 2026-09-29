@@ -19,6 +19,14 @@ abstract final class AppTextStyles {
     height: 32 / 24,
   );
 
+  // Title Small (Figma 닉네임·통계 숫자) 22 / 28 / 0
+  static const titleSmall = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w500,
+    color: AppColors.black,
+    height: 28 / 22,
+  );
+
   // Body Large 16 / 24 / 0.5
   static const bodyLarge = TextStyle(
     fontSize: 16,
@@ -43,6 +51,14 @@ abstract final class AppTextStyles {
     fontWeight: FontWeight.w600,
     height: 20 / 14,
     letterSpacing: 0.1,
+  );
+
+  // 통계 라벨 등 작은 라벨 (Figma) 12 / 16 / 0
+  static const labelMedium = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    color: AppColors.darkGray,
+    height: 16 / 12,
   );
 
   // Label Small (Metadata & Captions) 11 / 16 / 0.5

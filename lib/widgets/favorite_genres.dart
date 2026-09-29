@@ -17,7 +17,8 @@ class FavoriteGenres extends StatelessWidget {
           Text(
             '선호하는 장르',
             style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
             ),
           ),
           const SizedBox(height: 16),
@@ -45,12 +46,11 @@ class GenreChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Chip(
       label: Text(label),
-      labelStyle: AppTextStyles.bodyMedium.copyWith(
+      labelStyle: AppTextStyles.labelMedium.copyWith(
         color: AppColors.deepViolet,
-        fontWeight: FontWeight.w500,
       ),
       labelPadding: EdgeInsets.zero,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       backgroundColor: AppColors.lavender,
       side: BorderSide.none,
       shape: const StadiumBorder(),
