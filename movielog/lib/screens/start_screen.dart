@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// MovieLog의 시작 화면 (W0-01).
 class StartScreen extends StatelessWidget {
@@ -61,9 +62,8 @@ class StartScreen extends StatelessWidget {
               ),
               const Spacer(),
               ElevatedButton(
-                onPressed: () {
-                  // TODO(movielog): 다음 주차에 화면 이동 기능을 연결한다.
-                },
+                // 시작 화면으로 되돌아올 필요가 없으므로 push 대신 go를 사용한다.
+                onPressed: () => context.go('/register'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primary,
                   foregroundColor: Colors.white,
