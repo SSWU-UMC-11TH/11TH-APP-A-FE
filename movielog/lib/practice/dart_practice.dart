@@ -1,22 +1,22 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/movie.dart';
+import 'practice_movie.dart';
 
 /// 0주차 Dart 문법 연습용 영화 목록.
-const List<Movie> myMovies = <Movie>[
-  Movie(
+const List<PracticeMovie> myMovies = <PracticeMovie>[
+  PracticeMovie(
     title: '인터스텔라',
     director: '크리스토퍼 놀란',
     releaseYear: 2014,
     myRating: 4.5,
   ),
-  Movie(
+  PracticeMovie(
     title: '라라랜드',
     director: '데이미언 셔젤',
     releaseYear: 2016,
     myRating: 4.0,
   ),
-  Movie(
+  PracticeMovie(
     title: '소울',
     director: '피트 닥터',
     releaseYear: 2020,
@@ -34,17 +34,17 @@ String resolveNickname(String? nickname) {
 /// for 문과 map()을 사용해 영화 정보를 출력한다.
 void runDartPractice() {
   debugPrint('--- for 문으로 제목 출력 ---');
-  for (final Movie movie in myMovies) {
+  for (final PracticeMovie movie in myMovies) {
     debugPrint(movie.title);
   }
 
   debugPrint('--- map()으로 제목 출력 ---');
   final List<String> titles =
-      myMovies.map((Movie movie) => movie.title).toList();
+      myMovies.map((PracticeMovie movie) => movie.title).toList();
   debugPrint(titles.join(', '));
 
   debugPrint('--- 평점 확인 (nullable 처리) ---');
-  for (final Movie movie in myMovies) {
+  for (final PracticeMovie movie in myMovies) {
     debugPrint(movie.toString());
   }
 
