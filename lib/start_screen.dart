@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -34,9 +35,7 @@ class StartScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {
-                  debugPrint('시작하기 버튼을 눌렀습니다.');
-                },
+                onPressed: () => context.go('/register'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
