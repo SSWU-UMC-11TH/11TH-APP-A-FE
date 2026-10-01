@@ -36,6 +36,7 @@ class ProfileBody extends StatelessWidget {
           Center(child: EditProfileButton()),
           SizedBox(height: 32),
           ProfileStats(),
+          SizedBox(height: 32),
           FavoriteGenres(),
         ],
       ),

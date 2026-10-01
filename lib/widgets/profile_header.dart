@@ -33,16 +33,18 @@ class ProfileHeader extends StatelessWidget {
               'assets/icons/movie.svg',
               width: 24,
               height: 24,
-              colorFilter: ColorFilter.mode(
-                Theme.of(context).colorScheme.primary,
+              colorFilter: const ColorFilter.mode(
+                AppColors.violet,
                 BlendMode.srcIn,
               ),
               semanticsLabel: '영화 아이콘',
             ),
             const SizedBox(width: 8),
-            const Text(
-              '무비러버',
-              style: AppTextStyles.titleSmall,
+            const Flexible(
+              child: Text(
+                '무비러버',
+                style: AppTextStyles.titleSmall,
+              ),
             ),
           ],
         ),

@@ -15,7 +15,7 @@ class EditProfileButton extends StatelessWidget {
         foregroundColor: AppColors.violet,
         minimumSize: const Size(0, 42),
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        tapTargetSize: MaterialTapTargetSize.padded,
         side: const BorderSide(color: AppColors.violet),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),

@@ -8,31 +8,27 @@ class FavoriteGenres extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // 통계 영역과 떨어뜨리는 바깥 여백
-      margin: const EdgeInsets.only(top: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '선호하는 장르',
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '선호하는 장르',
+          style: AppTextStyles.bodyLarge.copyWith(
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0,
           ),
-          const SizedBox(height: 16),
-          const Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              GenreChip(label: '드라마'),
-              GenreChip(label: 'SF'),
-              GenreChip(label: '애니메이션'),
-            ],
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+        const Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            GenreChip(label: '드라마'),
+            GenreChip(label: 'SF'),
+            GenreChip(label: '애니메이션'),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:movielog/main.dart';
+import 'package:movielog/screens/start_screen.dart';
 
 void main() {
   testWidgets('시작 화면에 로고, 제목, 설명, 버튼이 표시된다', (WidgetTester tester) async {
