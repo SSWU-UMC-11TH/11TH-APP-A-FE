@@ -19,6 +19,11 @@ class AppRouter {
         path: '/register',
         builder: (context, state) => const SignUpScreen(),
       ),
+      GoRoute(
+        path: '/movies/:movieId',
+        builder: (context, state) =>
+            MovieDetailScreen(movieId: state.pathParameters['movieId']!),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainScreen(navigationShell: navigationShell);
@@ -37,14 +42,6 @@ class AppRouter {
               GoRoute(
                 path: '/movies',
                 builder: (context, state) => const MovieListScreen(),
-                routes: [
-                  GoRoute(
-                    path: ':movieId',
-                    builder: (context, state) => MovieDetailScreen(
-                      movieId: state.pathParameters['movieId']!,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
