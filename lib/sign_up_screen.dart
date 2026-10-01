@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'common_app_bar.dart';
 import 'theme/app_colors.dart';
@@ -45,6 +46,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('가입이 완료되었습니다.')));
+    context.go('/home');
   }
 
   String? _validateNickname(String? value) {
@@ -71,7 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(title: '회원가입', centerTitle: true, onBack: () {}),
+      appBar: const CommonAppBar(title: '회원가입', centerTitle: true),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
