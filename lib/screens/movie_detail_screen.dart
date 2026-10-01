@@ -5,15 +5,70 @@ import '../data/mock_movies.dart';
 import '../models/movie.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/rating_dialog.dart';
+import '../widgets/share_sheet.dart';
 
-class MovieDetailScreen extends StatelessWidget {
+class MovieDetailScreen extends StatefulWidget {
   const MovieDetailScreen({super.key, required this.movieId});
 
   final String movieId;
 
   @override
+  State<MovieDetailScreen> createState() => _MovieDetailScreenState();
+}
+
+class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  bool isFavorite = false;
+  double? myRating;
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
+  }
+
+  void _toggleFavorite() {
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+    _showSnackBar(isFavorite ? '즐겨찾기에 추가했습니다.' : '즐겨찾기에서 삭제했습니다.');
+  }
+
+  Future<void> _openRatingDialog(Movie movie) async {
+    final result = await showDialog<double>(
+      context: context,
+      builder: (dialogContext) =>
+          RatingDialog(movieTitle: movie.title, initialRating: myRating ?? 0),
+    );
+
+    if (!mounted || result == null) return;
+
+    setState(() {
+      myRating = result;
+    });
+    _showSnackBar('${result.toStringAsFixed(1)}점을 남겼습니다.');
+  }
+
+  Future<void> _openShareSheet(Movie movie) async {
+    final message = await showModalBottomSheet<String>(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => ShareSheet(movieTitle: movie.title),
+    );
+
+    if (!mounted || message == null) return;
+
+    _showSnackBar(message);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final movie = findMovieById(int.tryParse(movieId));
+    final movie = findMovieById(int.tryParse(widget.movieId));
 
     return Scaffold(
       appBar: AppBar(
@@ -23,7 +78,11 @@ class MovieDetailScreen extends StatelessWidget {
           style: AppTextStyles.titleMedium.copyWith(color: AppColors.violet),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
+          if (movie != null)
+            IconButton(
+              icon: const Icon(Icons.share_outlined),
+              onPressed: () => _openShareSheet(movie),
+            ),
         ],
       ),
       body: movie == null
@@ -55,7 +114,14 @@ class MovieDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-      bottomNavigationBar: movie == null ? null : const MovieDetailBottomBar(),
+      bottomNavigationBar: movie == null
+          ? null
+          : MovieDetailBottomBar(
+              isFavorite: isFavorite,
+              myRating: myRating,
+              onFavoriteTap: _toggleFavorite,
+              onRatingTap: () => _openRatingDialog(movie),
+            ),
     );
   }
 }
@@ -147,7 +213,18 @@ class MovieSynopsis extends StatelessWidget {
 }
 
 class MovieDetailBottomBar extends StatelessWidget {
-  const MovieDetailBottomBar({super.key});
+  const MovieDetailBottomBar({
+    super.key,
+    required this.isFavorite,
+    required this.myRating,
+    required this.onFavoriteTap,
+    required this.onRatingTap,
+  });
+
+  final bool isFavorite;
+  final double? myRating;
+  final VoidCallback onFavoriteTap;
+  final VoidCallback onRatingTap;
 
   @override
   Widget build(BuildContext context) {
@@ -158,9 +235,9 @@ class MovieDetailBottomBar extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.bookmark_border),
-                label: const Text('즐겨찾기'),
+                onPressed: onFavoriteTap,
+                icon: Icon(isFavorite ? Icons.bookmark : Icons.bookmark_border),
+                label: Text(isFavorite ? '즐겨찾기 해제' : '즐겨찾기'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.violet,
                   side: const BorderSide(color: AppColors.violet),
@@ -172,9 +249,15 @@ class MovieDetailBottomBar extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.rate_review_outlined),
-                label: const Text('평점 남기기'),
+                onPressed: onRatingTap,
+                icon: Icon(
+                  myRating == null ? Icons.rate_review_outlined : Icons.star,
+                ),
+                label: Text(
+                  myRating == null
+                      ? '평점 남기기'
+                      : '내 평점 ${myRating!.toStringAsFixed(1)}',
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.violet,
                   foregroundColor: AppColors.onPrimary,
