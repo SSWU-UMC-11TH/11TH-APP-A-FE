@@ -57,6 +57,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          // onPressed가 null인 비활성 상태는 연보라 배경으로 구분한다.
+          disabledBackgroundColor: AppColors.primaryDisabled,
+          disabledForegroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
@@ -74,6 +77,43 @@ class AppTheme {
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+      // 회원가입 입력창처럼 TextFormField의 공통 모양은 여기서 정하고,
+      // 화면에서는 hint와 suffixIcon만 지정한다.
+      inputDecorationTheme: InputDecorationThemeData(
+        filled: true,
+        // validation 실패(WidgetState.error) 상태에서는 채움색을 연분홍으로 바꾼다.
+        fillColor: WidgetStateColor.resolveWith(
+          (Set<WidgetState> states) => states.contains(WidgetState.error)
+              ? AppColors.errorContainer
+              : AppColors.fieldFill,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        hintStyle: const TextStyle(fontSize: 15, color: AppColors.label),
+        errorStyle: const TextStyle(fontSize: 12, color: AppColors.error),
+        // 일반 상태
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.fieldBorder),
+        ),
+        // 입력 중인 상태
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        // validation 실패
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error),
+        ),
+        // validation 실패 + 입력 중
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
