@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/common_app_bar.dart';
 
@@ -36,6 +37,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canSubmit = _nicknameController.text.trim().length >= 2 &&
+        _emailPattern.hasMatch(_emailController.text.trim()) &&
+        _passwordController.text.length >= 8 &&
+        _agreedToTerms;
+
     return Scaffold(
       appBar: CommonAppBar(
         title: '회원가입',
@@ -157,6 +163,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       style: AppTextStyles.bodyLarge,
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: canSubmit
+                      ? () {
+                          final isValid =
+                              _formKey.currentState?.validate() ?? false;
+                          if (!isValid) return;
+                          FocusScope.of(context).unfocus();
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.violet,
+                    foregroundColor: AppColors.white,
+                    disabledBackgroundColor: AppColors.lightViolet,
+                    disabledForegroundColor: AppColors.white,
+                    elevation: 0,
+                    minimumSize: const Size.fromHeight(56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: AppTextStyles.labelLarge,
+                  ),
+                  child: const Text('가입하기'),
                 ),
               ],
             ),
