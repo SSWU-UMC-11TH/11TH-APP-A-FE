@@ -26,10 +26,7 @@ class MovieRatingInput extends StatelessWidget {
       itemSize: 40,
       glow: false,
       itemBuilder: (BuildContext context, int index) {
-        return const Icon(
-          Icons.star,
-          color: AppColors.star,
-        );
+        return const Icon(Icons.star, color: AppColors.star);
       },
       onRatingUpdate: onChanged,
     );
