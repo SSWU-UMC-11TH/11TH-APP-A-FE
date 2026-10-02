@@ -112,6 +112,52 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onChanged: (_) => setState(() {}),
                   onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
                 ),
+                const SizedBox(height: 16),
+                const Text('비밀번호', style: AppTextStyles.bodyLarge),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _passwordController,
+                  focusNode: _passwordFocusNode,
+                  decoration: const InputDecoration(
+                    hintText: '비밀번호를 입력해주세요',
+                    border: OutlineInputBorder(),
+                  ),
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    final password = value ?? '';
+
+                    if (password.isEmpty) {
+                      return '비밀번호를 입력해주세요.';
+                    }
+
+                    if (password.length < 8) {
+                      return '비밀번호는 8자 이상이어야 합니다.';
+                    }
+
+                    return null;
+                  },
+                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _passwordFocusNode.unfocus(),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _agreedToTerms,
+                      onChanged: (value) {
+                        setState(() {
+                          _agreedToTerms = value ?? false;
+                        });
+                      },
+                    ),
+                    const Text(
+                      '필수 약관에 동의합니다',
+                      style: AppTextStyles.bodyLarge,
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
