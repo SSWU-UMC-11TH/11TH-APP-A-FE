@@ -11,6 +11,8 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
+  static final _emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
   final _formKey = GlobalKey<FormState>();
 
   final _nicknameController = TextEditingController();
@@ -80,6 +82,35 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   },
                   onChanged: (_) => setState(() {}),
                   onFieldSubmitted: (_) => _emailFocusNode.requestFocus(),
+                ),
+                const SizedBox(height: 16),
+                const Text('이메일', style: AppTextStyles.bodyLarge),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _emailController,
+                  focusNode: _emailFocusNode,
+                  decoration: const InputDecoration(
+                    hintText: '이메일 주소를 입력해주세요',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    final email = value?.trim() ?? '';
+
+                    if (email.isEmpty) {
+                      return '이메일을 입력해주세요.';
+                    }
+
+                    if (!_emailPattern.hasMatch(email)) {
+                      return '올바른 이메일 형식이 아닙니다.';
+                    }
+
+                    return null;
+                  },
+                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _passwordFocusNode.requestFocus(),
                 ),
               ],
             ),
