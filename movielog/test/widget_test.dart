@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:movielog/main.dart';
 import 'package:movielog/router/app_router.dart';
+import 'package:movielog/widgets/common_app_bar.dart';
+import 'package:movielog/widgets/stat_item.dart';
 
 /// GoRouter는 앱 전체에서 하나만 사용하므로 테스트마다 시작 위치로 되돌린다.
 Future<void> pumpAppAtStart(WidgetTester tester) async {
@@ -115,5 +117,21 @@ void main() {
     await tester.tap(find.widgetWithText(OutlinedButton, '즐겨찾기 완료'));
     await tester.pump();
     expect(find.text('별빛 아래 우리을(를) 즐겨찾기에서 삭제했어요.'), findsOneWidget);
+  });
+
+  testWidgets('프로필 화면에 공용 AppBar, 통계 3개, 장르 Chip 3개, 수정 버튼이 표시된다', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppAtStart(tester);
+    AppRouter.router.go('/my');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CommonAppBar), findsOneWidget);
+    expect(find.text('내 프로필'), findsOneWidget);
+    expect(find.text('무비러버'), findsOneWidget);
+    expect(find.byType(StatItem), findsNWidgets(3));
+    expect(find.text('342'), findsOneWidget);
+    expect(find.byType(Chip), findsNWidgets(3));
+    expect(find.widgetWithText(TextButton, '프로필 수정'), findsOneWidget);
   });
 }
