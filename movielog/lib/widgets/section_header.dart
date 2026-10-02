@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// `인기 영화` + `전체보기 >` 처럼 제목과 더보기 버튼을 함께 두는 섹션 머리말.
 class SectionHeader extends StatelessWidget {

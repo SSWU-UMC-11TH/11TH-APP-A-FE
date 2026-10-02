@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 가로로 스크롤하며 장르 하나를 고르는 Chip 목록.
 class GenreChipList extends StatelessWidget {

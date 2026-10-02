@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 사용자가 0.5점 단위로 별점을 선택하는 Widget.
 ///
@@ -26,10 +26,7 @@ class MovieRatingInput extends StatelessWidget {
       itemSize: 40,
       glow: false,
       itemBuilder: (BuildContext context, int index) {
-        return const Icon(
-          Icons.star,
-          color: AppColors.star,
-        );
+        return const Icon(Icons.star, color: AppColors.star);
       },
       onRatingUpdate: onChanged,
     );

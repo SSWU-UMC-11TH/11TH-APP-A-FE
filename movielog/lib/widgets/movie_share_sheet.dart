@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 상세 화면에서 공유 방법을 고르는 BottomSheet.
 ///

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 상세 화면에서 제목, 평균 평점, 태그를 보여주는 요약 영역.
 class MovieSummary extends StatelessWidget {
