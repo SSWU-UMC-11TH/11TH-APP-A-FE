@@ -6,6 +6,10 @@ import 'movie_rating_input.dart';
 /// 별점을 직접 선택하는 커스텀 Dialog.
 ///
 /// 확인을 누르면 선택한 별점을 `Navigator.pop`의 결과로 돌려준다.
+///
+/// 2주차 추가 미니 실습(`flutter_rating_bar`로 평점 입력 상태 다루기)에 해당하지만,
+/// 3주차를 먼저 진행하면서 상세 화면의 평점 남기기 기능으로 구현했다.
+/// 별점을 선택하기 전에는 확인 버튼이 비활성화되고, 선택하면 활성화된다.
 class RatingDialog extends StatefulWidget {
   const RatingDialog({super.key, this.initialRating = 0});
 

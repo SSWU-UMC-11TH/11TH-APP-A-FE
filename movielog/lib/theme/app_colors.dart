@@ -34,4 +34,19 @@ abstract final class AppColors {
 
   /// 포스터 위 평점 Badge 배경
   static const Color badge = Color(0xCC2C2735);
+
+  /// 오류 메시지, 오류 상태 입력창 테두리
+  static const Color error = Color(0xFFD64545);
+
+  /// 오류 상태 입력창 채움
+  static const Color errorContainer = Color(0xFFFBE9E9);
+
+  /// 입력창 기본 채움
+  static const Color fieldFill = Color(0xFFF2EFEA);
+
+  /// 입력창 기본 테두리
+  static const Color fieldBorder = Color(0xFFD8D3DC);
+
+  /// 조건을 아직 충족하지 못한 비활성 버튼 배경
+  static const Color primaryDisabled = Color(0xFFC3BAE0);
 }

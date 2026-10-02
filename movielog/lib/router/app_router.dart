@@ -6,7 +6,7 @@ import '../screens/main_screen.dart';
 import '../screens/movie_detail_screen.dart';
 import '../screens/movie_list_screen.dart';
 import '../screens/profile_screen.dart';
-import '../screens/register_screen.dart';
+import '../screens/sign_up_screen.dart';
 import '../screens/start_screen.dart';
 
 /// 앱에서 사용하는 Route를 모아 관리하는 클래스.
@@ -24,7 +24,7 @@ class AppRouter {
       GoRoute(
         path: '/register',
         builder: (BuildContext context, GoRouterState state) =>
-            const RegisterScreen(),
+            const SignUpScreen(),
       ),
       // 상세 화면은 NavigationBar 없이 전체 화면으로 보여주므로 ShellRoute 밖에 둔다.
       GoRoute(

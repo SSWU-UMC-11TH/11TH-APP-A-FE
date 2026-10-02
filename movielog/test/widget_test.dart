@@ -18,7 +18,20 @@ Future<void> pumpAppAtStart(WidgetTester tester) async {
 Future<void> goToHome(WidgetTester tester) async {
   await tester.tap(find.widgetWithText(ElevatedButton, '시작하기'));
   await tester.pumpAndSettle();
-  await tester.tap(find.widgetWithText(ElevatedButton, '회원가입'));
+  // 2주차부터 회원가입은 유효한 입력과 약관 동의가 있어야 진행된다.
+  await tester.enterText(find.byType(TextFormField).at(0), '무비러버');
+  await tester.enterText(find.byType(TextFormField).at(1), 'movie@example.com');
+  await tester.enterText(find.byType(TextFormField).at(2), 'password123');
+  await tester.tap(find.byType(Checkbox));
+  await tester.pumpAndSettle();
+  // 테스트 화면(800x600)에서는 가입 버튼이 아래로 벗어나므로 스크롤한 뒤 누른다.
+  final Finder submitButton = find.widgetWithText(ElevatedButton, '가입하기');
+  await tester.ensureVisible(submitButton);
+  await tester.pumpAndSettle();
+  await tester.tap(submitButton);
+  await tester.pumpAndSettle();
+  // 가입 완료 Snackbar 닫힘 Timer가 테스트 종료 후 남지 않도록 시간을 흘려 닫는다.
+  await tester.pump(const Duration(seconds: 5));
   await tester.pumpAndSettle();
 }
 
