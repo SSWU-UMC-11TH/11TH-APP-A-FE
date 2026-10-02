@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'practice/dart_practice.dart';
-import 'screens/start_screen.dart';
+import 'router/app_router.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   // 0주차 Dart 문법 연습 결과를 콘솔에서 확인한다.
@@ -14,14 +15,12 @@ class MovieLogApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // 첫 화면과 화면 이동은 MaterialApp이 아니라 AppRouter의 GoRouter가 결정한다.
+    return MaterialApp.router(
       title: 'MovieLog',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF5B3E8E)),
-        useMaterial3: true,
-      ),
-      home: const StartScreen(),
+      theme: AppTheme.light,
+      routerConfig: AppRouter.router,
     );
   }
 }
