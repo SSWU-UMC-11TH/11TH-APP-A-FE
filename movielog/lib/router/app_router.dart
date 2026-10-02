@@ -5,7 +5,7 @@ import '../screens/home_screen.dart';
 import '../screens/main_screen.dart';
 import '../screens/movie_detail_screen.dart';
 import '../screens/movie_list_screen.dart';
-import '../screens/my_page_screen.dart';
+import '../screens/profile_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/start_screen.dart';
 
@@ -50,14 +50,14 @@ class AppRouter {
             path: '/movies',
             builder: (BuildContext context, GoRouterState state) =>
                 MovieListScreen(
-              // Query Parameter로 전달된 장르를 초기 선택 장르로 사용한다.
-              initialGenre: state.uri.queryParameters['genre'],
-            ),
+                  // Query Parameter로 전달된 장르를 초기 선택 장르로 사용한다.
+                  initialGenre: state.uri.queryParameters['genre'],
+                ),
           ),
           GoRoute(
             path: '/my',
             builder: (BuildContext context, GoRouterState state) =>
-                const MyPageScreen(),
+                const ProfileScreen(),
           ),
         ],
       ),
