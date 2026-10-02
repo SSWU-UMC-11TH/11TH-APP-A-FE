@@ -47,15 +47,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: const [
-                SizedBox(height: 24),
-                Text(
+              children: [
+                const SizedBox(height: 24),
+                const Text(
                   '환영합니다!\n간단한 정보만 입력하고 시작해보세요.',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium,
                 ),
-                SizedBox(height: 32),
-                // 다음 단계에서 입력창을 추가합니다.
+                const SizedBox(height: 32),
+                const Text('닉네임', style: AppTextStyles.bodyLarge),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _nicknameController,
+                  decoration: const InputDecoration(
+                    hintText: '닉네임을 입력해주세요',
+                    border: OutlineInputBorder(),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    final nickname = value?.trim() ?? '';
+
+                    if (nickname.isEmpty) {
+                      return '닉네임을 입력해주세요.';
+                    }
+
+                    if (nickname.length < 2) {
+                      return '닉네임은 2자 이상이어야 합니다.';
+                    }
+
+                    return null;
+                  },
+                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _emailFocusNode.requestFocus(),
+                ),
               ],
             ),
           ),
