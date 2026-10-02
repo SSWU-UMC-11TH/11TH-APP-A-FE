@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 포스터, 평점 Badge, 제목을 함께 보여주는 영화 카드.
 ///

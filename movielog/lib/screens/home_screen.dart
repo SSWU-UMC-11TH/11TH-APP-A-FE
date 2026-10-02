@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/home_hero_card.dart';
 import '../widgets/movie_horizontal_list.dart';
 import '../widgets/section_header.dart';

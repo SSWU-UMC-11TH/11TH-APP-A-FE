@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import '../widgets/movie_share_sheet.dart';
 import '../widgets/movie_summary.dart';
 import '../widgets/rating_dialog.dart';

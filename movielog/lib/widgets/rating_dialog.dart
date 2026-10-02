@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 import 'movie_rating_input.dart';
 
 /// 별점을 직접 선택하는 커스텀 Dialog.

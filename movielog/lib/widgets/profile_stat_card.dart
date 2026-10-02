@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 마이페이지에서 본 영화 수, 평균 평점 같은 숫자를 보여주는 카드.
 class ProfileStatCard extends StatelessWidget {

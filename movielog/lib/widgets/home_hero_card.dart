@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
 
 /// 홈 상단에서 추천 신작 한 편을 크게 보여주는 카드.
 class HomeHeroCard extends StatelessWidget {
