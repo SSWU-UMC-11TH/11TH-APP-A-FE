@@ -12,17 +12,21 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final movie = movies.first;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Align(
-            alignment: Alignment.topLeft,
-            child: SizedBox(
-              width: 172,
-              child: MovieCard(
-                movie: movie,
-                onTap: () => context.push('/movies/${movie.id}'),
+    // 홈 화면에서는 뒤로 가기를 막는다.
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 172,
+                child: MovieCard(
+                  movie: movie,
+                  onTap: () => context.push('/movies/${movie.id}'),
+                ),
               ),
             ),
           ),

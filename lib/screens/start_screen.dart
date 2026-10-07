@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -43,8 +44,8 @@ class StartScreen extends StatelessWidget {
               ),
               const Spacer(),
               ElevatedButton(
-                // 화면 이동은 아직 구현하지 않음
-                onPressed: () {},
+                // 회원가입 화면으로 이동하면 시작 화면은 스택에서 제거됨
+                onPressed: () => context.go('/signup'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.deepViolet,
                   foregroundColor: AppColors.white,
