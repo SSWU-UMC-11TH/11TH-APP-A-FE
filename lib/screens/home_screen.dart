@@ -14,9 +14,12 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final heroMovie = movies.first;
-    // 인기 영화는 별점이 높은 순서로 보여준다.
+    // 인기 영화는 별점이 높은 순서로 보여준다. 별점이 같으면 ID 순서로 정렬한다.
     final popularMovies = [...movies]
-      ..sort((a, b) => b.rating.compareTo(a.rating));
+      ..sort((a, b) {
+        final byRating = b.rating.compareTo(a.rating);
+        return byRating != 0 ? byRating : a.id.compareTo(b.id);
+      });
 
     // 홈 화면에서는 뒤로 가기를 막는다.
     return PopScope(
