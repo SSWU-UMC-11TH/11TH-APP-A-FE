@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../data/mock_movies.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/hero_movie_card.dart';
-import '../widgets/home_header.dart';
 import '../widgets/popular_movie_card.dart';
+import '../widgets/search_header.dart';
 import '../widgets/section_header.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: HomeHeader(),
+                  child: SearchHeader(title: 'MovieLog'),
                 ),
                 const SizedBox(height: 8),
                 Padding(
