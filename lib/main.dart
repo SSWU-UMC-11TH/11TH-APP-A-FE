@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/profile_screen.dart';
+import 'screens/signup_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'MovieLog',
       theme: AppTheme.light,
       // 시작 화면을 확인하려면 StartScreen()으로 변경
-      home: const ProfileScreen(),
+      home: const SignUpScreen(),
     );
   }
 }
