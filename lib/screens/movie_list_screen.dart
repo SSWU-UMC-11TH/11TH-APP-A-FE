@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../data/mock_movies.dart';
 import '../models/movie.dart';
+import '../services/fake_movie_service.dart';
+import '../services/genre_preference.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/movie_card.dart';
+import '../widgets/movie_list_states.dart';
 
 class MovieListScreen extends StatefulWidget {
   const MovieListScreen({super.key});
@@ -14,16 +17,49 @@ class MovieListScreen extends StatefulWidget {
 }
 
 class _MovieListScreenState extends State<MovieListScreen> {
+  // Empty·Error 상태 확인 시 이 값만 바꿔서 실행합니다.
+  static const _loadMode = MovieLoadMode.success;
+
+  final _movieService = const FakeMovieService();
+  final _genrePreference = GenrePreference();
+
+  late Future<List<Movie>> _moviesFuture;
   String? selectedGenre;
 
   @override
-  Widget build(BuildContext context) {
-    final filteredMovies = selectedGenre == null
-        ? movies
-        : movies
-              .where((movie) => movie.genres.contains(selectedGenre))
-              .toList();
+  void initState() {
+    super.initState();
+    _moviesFuture = _movieService.fetchMovies(mode: _loadMode);
+    _restoreSelectedGenre();
+  }
 
+  Future<void> _restoreSelectedGenre() async {
+    final savedGenre = await _genrePreference.read();
+
+    if (!mounted) return;
+
+    setState(() {
+      selectedGenre = savedGenre == GenrePreference.allGenre
+          ? null
+          : savedGenre;
+    });
+  }
+
+  Future<void> _onGenreSelected(String? genre) async {
+    setState(() {
+      selectedGenre = genre;
+    });
+    await _genrePreference.save(genre ?? GenrePreference.allGenre);
+  }
+
+  void _retry() {
+    setState(() {
+      _moviesFuture = _movieService.fetchMovies(mode: _loadMode);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -38,14 +74,38 @@ class _MovieListScreenState extends State<MovieListScreen> {
           GenreChipBar(
             genres: movieGenres,
             selectedGenre: selectedGenre,
-            onSelected: (genre) {
-              setState(() {
-                selectedGenre = genre;
-              });
-            },
+            onSelected: _onGenreSelected,
           ),
           const SizedBox(height: 12),
-          Expanded(child: MovieGrid(movieList: filteredMovies)),
+          Expanded(
+            child: FutureBuilder<List<Movie>>(
+              future: _moviesFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const MovieListLoading();
+                }
+
+                if (snapshot.hasError) {
+                  return MovieListError(onRetry: _retry);
+                }
+
+                final loadedMovies = snapshot.data ?? const <Movie>[];
+                final filteredMovies = selectedGenre == null
+                    ? loadedMovies
+                    : loadedMovies
+                          .where(
+                            (movie) => movie.genres.contains(selectedGenre),
+                          )
+                          .toList();
+
+                if (filteredMovies.isEmpty) {
+                  return const MovieListEmpty();
+                }
+
+                return MovieGrid(movieList: filteredMovies);
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -106,10 +166,6 @@ class MovieGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (movieList.isEmpty) {
-      return const Center(child: Text('해당 장르의 영화가 없습니다.'));
-    }
-
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       itemCount: movieList.length,
