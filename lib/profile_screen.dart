@@ -21,7 +21,8 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
+                height: 40,
+                child: ElevatedButton(
                   onPressed: () {
                     debugPrint('프로필 수정 버튼을 눌렀습니다.');
                   },
@@ -31,30 +32,27 @@ class ProfileScreen extends StatelessWidget {
                     elevation: 0,
                     side: const BorderSide(color: AppColors.violet),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
-                  icon: SvgPicture.asset(
-                    'assets/icons/person.svg',
-                    width: 18,
-                    height: 18,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.violet,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  label: const Text('프로필 수정'),
+                  child: const Text('프로필 수정'),
                 ),
               ),
               const SizedBox(height: 24),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  StatItem(label: '본 영화', value: '24'),
+                  Expanded(
+                    child: StatItem(label: '본 영화', value: '24'),
+                  ),
                   SizedBox(width: 16),
-                  StatItem(label: '평균 평점', value: '4.5'),
+                  Expanded(
+                    child: StatItem(label: '평균 평점', value: '4.5'),
+                  ),
                   SizedBox(width: 16),
-                  StatItem(label: '즐겨찾기', value: '8'),
+                  Expanded(
+                    child: StatItem(label: '즐겨찾기', value: '8'),
+                  ),
                 ],
               ),
               const SizedBox(height: 24),
@@ -82,11 +80,36 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const CircleAvatar(
-          radius: 40,
-          backgroundImage: AssetImage(
-            'assets/images/profile/profile_movielog.jpg',
-          ),
+        Stack(
+          children: [
+            const CircleAvatar(
+              radius: 40,
+              backgroundImage: AssetImage(
+                'assets/images/profile/profile_movielog.jpg',
+              ),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: AppColors.violet,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: SvgPicture.asset(
+                  'assets/icons/person.svg',
+                  width: 14,
+                  height: 14,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         const Text('무비러버', style: AppTextStyles.titleLarge),
@@ -111,15 +134,15 @@ class StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         color: AppColors.violet.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         children: [
           Text(label, style: AppTextStyles.bodySmall),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             value,
             style: AppTextStyles.titleLarge.copyWith(color: AppColors.violet),

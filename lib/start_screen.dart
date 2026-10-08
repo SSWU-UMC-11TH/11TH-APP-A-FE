@@ -1,28 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'theme/app_theme.dart';
-
-import 'package:flutter_svg/flutter_svg.dart';
-
-import 'router/app_router.dart';
-
-void main() {
-  runApp(const MovieLogApp());
-}
-
-class MovieLogApp extends StatelessWidget {
-  const MovieLogApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'MovieLog',
-      theme: AppTheme.light,
-      routerConfig: AppRouter.router,
-    );
-  }
-}
+import 'package:go_router/go_router.dart';
 
 class StartScreen extends StatelessWidget {
   const StartScreen({super.key});
@@ -36,11 +13,11 @@ class StartScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SvgPicture.asset(
-                'assets/logos/movielog_logo.svg',
-                width: 72,
-                height: 72,
-                semanticsLabel: 'MovieLog Logo',
+              const Icon(
+                Icons.movie_outlined,
+                size: 72,
+                color: Colors.deepPurple,
+                semanticLabel: '영화 아이콘',
               ),
               const SizedBox(height: 24),
               const Text(
@@ -58,9 +35,7 @@ class StartScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {
-                  debugPrint('시작하기 버튼을 눌렀습니다.');
-                },
+                onPressed: () => context.go('/register'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
                   padding: const EdgeInsets.symmetric(horizontal: 24),
