@@ -20,6 +20,9 @@ abstract final class AppColors {
   // Input
   static const border = Color(0xFFCAC4D0);
 
+  // Rating
+  static const star = Color(0xFFC9A24B);
+
   // Error
   static const error = Color(0xFFB3261E);
   static const errorContainer = Color(0xFFFFDAD6);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/signup_screen.dart';
+import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -13,19 +13,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'MovieLog',
       theme: AppTheme.light,
-      // 시작 화면을 확인하려면 StartScreen()으로 변경
-      home: const SignUpScreen(),
+      routerConfig: AppRouter.router,
     );
   }
-}
-
-class Movie {
-  const Movie({required this.id, required this.title});
-
-  final int id;
-  final String title;
 }

@@ -51,5 +51,28 @@ abstract final class AppTheme {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
     ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColors.warmWhite,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      indicatorColor: AppColors.lavender,
+      iconTheme: WidgetStateProperty.resolveWith(
+        (states) => IconThemeData(
+          color: states.contains(WidgetState.selected)
+              ? AppColors.deepViolet
+              : AppColors.darkGray,
+        ),
+      ),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (states) => AppTextStyles.labelMedium.copyWith(
+          color: states.contains(WidgetState.selected)
+              ? AppColors.deepViolet
+              : AppColors.darkGray,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w700
+              : FontWeight.w500,
+        ),
+      ),
+    ),
   );
 }
