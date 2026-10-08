@@ -129,6 +129,22 @@ void main() {
     expect(find.text('미션 임프로버블'), findsOneWidget);
   });
 
+  testWidgets('좁은 화면에서도 복원된 장르 Chip이 보이도록 스크롤된다', (WidgetTester tester) async {
+    // 실제 휴대폰처럼 Chip이 한 화면에 다 들어가지 않는 너비로 줄인다.
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await GenrePreference().save('액션');
+
+    await pumpMovieList(tester);
+    await tester.pump(fetchDelay);
+    await tester.pumpAndSettle();
+
+    final Rect chipRect = tester.getRect(find.text('액션'));
+    expect(chipRect.left, greaterThanOrEqualTo(0));
+    expect(chipRect.right, lessThanOrEqualTo(390));
+  });
+
   testWidgets('Query Parameter 장르는 저장된 장르보다 우선한다', (WidgetTester tester) async {
     await GenrePreference().save('액션');
 
