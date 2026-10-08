@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../data/mock_movies.dart';
+import '../models/movie.dart';
+import '../services/fake_movie_service.dart';
 import '../widgets/genre_filter_chips.dart';
-import '../widgets/movie_card.dart';
+import '../widgets/movie_grid.dart';
 import '../widgets/search_header.dart';
 
 class MovieListScreen extends StatefulWidget {
@@ -22,14 +23,21 @@ class _MovieListScreenState extends State<MovieListScreen> {
     ...{for (final movie in movies) movie.genre},
   ];
 
+  final _movieService = const FakeMovieService();
+
+  // Future는 build가 아니라 initState에서 한 번만 만든다.
+  late Future<List<Movie>> _moviesFuture;
+
   String _selectedGenre = _allGenre;
 
   @override
-  Widget build(BuildContext context) {
-    final filteredMovies = _selectedGenre == _allGenre
-        ? movies
-        : movies.where((movie) => movie.genre == _selectedGenre).toList();
+  void initState() {
+    super.initState();
+    _moviesFuture = _movieService.fetchMovies();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -47,39 +55,21 @@ class _MovieListScreenState extends State<MovieListScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  const horizontalPadding = 16.0;
-                  const crossAxisSpacing = 12.0;
-                  // 포스터(3:4)와 글자 영역의 높이를 더해 카드 높이를 정한다.
-                  final cardWidth =
-                      (constraints.maxWidth -
-                          horizontalPadding * 2 -
-                          crossAxisSpacing) /
-                      2;
+              child: FutureBuilder<List<Movie>>(
+                future: _moviesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                      horizontalPadding,
-                      0,
-                      horizontalPadding,
-                      16,
-                    ),
-                    itemCount: filteredMovies.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: crossAxisSpacing,
-                      mainAxisSpacing: 16,
-                      mainAxisExtent: cardWidth * 4 / 3 + 68,
-                    ),
-                    itemBuilder: (context, index) {
-                      final movie = filteredMovies[index];
-                      return MovieCard(
-                        movie: movie,
-                        onTap: () => context.push('/movies/${movie.id}'),
-                      );
-                    },
-                  );
+                  final loadedMovies = snapshot.data ?? const <Movie>[];
+                  final filteredMovies = _selectedGenre == _allGenre
+                      ? loadedMovies
+                      : loadedMovies
+                            .where((movie) => movie.genre == _selectedGenre)
+                            .toList();
+
+                  return MovieGrid(movies: filteredMovies);
                 },
               ),
             ),
