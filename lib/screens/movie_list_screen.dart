@@ -5,6 +5,9 @@ import '../models/movie.dart';
 import '../services/fake_movie_service.dart';
 import '../widgets/genre_filter_chips.dart';
 import '../widgets/movie_grid.dart';
+import '../widgets/movie_list_empty.dart';
+import '../widgets/movie_list_error.dart';
+import '../widgets/movie_list_loading.dart';
 import '../widgets/search_header.dart';
 
 class MovieListScreen extends StatefulWidget {
@@ -39,6 +42,13 @@ class _MovieListScreenState extends State<MovieListScreen> {
     _moviesFuture = _movieService.fetchMovies(mode: _loadMode);
   }
 
+  // 재시도할 때만 새로운 Future를 만든다.
+  void _retry() {
+    setState(() {
+      _moviesFuture = _movieService.fetchMovies(mode: _loadMode);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +72,12 @@ class _MovieListScreenState extends State<MovieListScreen> {
                 future: _moviesFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const MovieListLoading();
+                  }
+
+                  // 오류를 빈 목록보다 먼저 확인한다.
+                  if (snapshot.hasError) {
+                    return MovieListError(onRetry: _retry);
                   }
 
                   final loadedMovies = snapshot.data ?? const <Movie>[];
@@ -71,6 +86,10 @@ class _MovieListScreenState extends State<MovieListScreen> {
                       : loadedMovies
                             .where((movie) => movie.genre == _selectedGenre)
                             .toList();
+
+                  if (filteredMovies.isEmpty) {
+                    return const MovieListEmpty();
+                  }
 
                   return MovieGrid(movies: filteredMovies);
                 },
