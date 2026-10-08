@@ -25,6 +25,9 @@ class _MovieListScreenState extends State<MovieListScreen> {
 
   final _movieService = const FakeMovieService();
 
+  // TODO: Empty, Error 화면을 확인할 때 MovieLoadMode.empty / failure로 바꿔서 실행
+  static const _loadMode = MovieLoadMode.success;
+
   // Future는 build가 아니라 initState에서 한 번만 만든다.
   late Future<List<Movie>> _moviesFuture;
 
@@ -33,7 +36,7 @@ class _MovieListScreenState extends State<MovieListScreen> {
   @override
   void initState() {
     super.initState();
-    _moviesFuture = _movieService.fetchMovies();
+    _moviesFuture = _movieService.fetchMovies(mode: _loadMode);
   }
 
   @override
