@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:movielog/main.dart';
+import 'package:movielog/app/movie_log_app.dart';
 import 'package:movielog/router/app_router.dart';
 import 'package:movielog/screens/sign_up_screen.dart';
 import 'package:movielog/widgets/terms_checkbox.dart';
 
+import 'support/fake_tmdb_movie_service.dart';
+
 /// 앱을 띄우고 회원가입 화면으로 이동한다.
 Future<void> pumpSignUp(WidgetTester tester) async {
-  await tester.pumpWidget(const MovieLogApp());
+  await tester.pumpWidget(MovieLogApp(movieService: FakeTmdbMovieService()));
   AppRouter.router.go('/register');
   await tester.pumpAndSettle();
 }
@@ -38,9 +40,7 @@ Future<void> enterValidInputs(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('입력 전에는 오류 메시지가 없고 가입 버튼이 비활성화된다', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('입력 전에는 오류 메시지가 없고 가입 버튼이 비활성화된다', (WidgetTester tester) async {
     await pumpSignUp(tester);
 
     expect(find.byType(SignUpScreen), findsOneWidget);
@@ -78,9 +78,7 @@ void main() {
     expect(find.text('닉네임을 입력해주세요.'), findsOneWidget);
   });
 
-  testWidgets('모든 입력이 유효하고 약관에 동의해야 가입 버튼이 활성화된다', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('모든 입력이 유효하고 약관에 동의해야 가입 버튼이 활성화된다', (WidgetTester tester) async {
     await pumpSignUp(tester);
 
     await enterValidInputs(tester);

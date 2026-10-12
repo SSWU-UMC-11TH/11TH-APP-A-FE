@@ -3,16 +3,26 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'movie_rating_input.dart';
 
+/// 평점 Dialog가 돌려주는 값. 평점 저장 요청의 `movieId`, `score`와 같은 형태다.
+typedef RatingResult = ({int movieId, double score});
+
 /// 별점을 직접 선택하는 커스텀 Dialog.
 ///
-/// 확인을 누르면 선택한 별점을 `Navigator.pop`의 결과로 돌려준다.
+/// 확인을 누르면 TMDB 영화 `id`와 선택한 별점을 `Navigator.pop`의 결과로 돌려준다.
+/// 이 `movieId`가 이후 MovieLog 평점 저장 API의 `movieId`가 된다.
 ///
 /// 2주차 추가 미니 실습(`flutter_rating_bar`로 평점 입력 상태 다루기)에 해당하지만,
 /// 3주차를 먼저 진행하면서 상세 화면의 평점 남기기 기능으로 구현했다.
 /// 별점을 선택하기 전에는 확인 버튼이 비활성화되고, 선택하면 활성화된다.
 class RatingDialog extends StatefulWidget {
-  const RatingDialog({super.key, this.initialRating = 0});
+  const RatingDialog({
+    super.key,
+    required this.movieId,
+    this.initialRating = 0,
+  });
 
+  /// 평점을 남길 영화의 TMDB `id`. 목록 index가 아니라 영화를 식별하는 값이다.
+  final int movieId;
   final double initialRating;
 
   @override
@@ -67,7 +77,10 @@ class _RatingDialogState extends State<RatingDialog> {
                     // 별점을 아직 고르지 않았다면 저장 버튼을 비활성화한다.
                     onPressed: rating == 0
                         ? null
-                        : () => Navigator.pop(context, rating),
+                        : () => Navigator.pop<RatingResult>(context, (
+                            movieId: widget.movieId,
+                            score: rating,
+                          )),
                     child: const Text('확인'),
                   ),
                 ),
