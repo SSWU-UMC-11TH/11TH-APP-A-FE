@@ -1,32 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import '../theme/app_colors.dart';
 
-/// 상세 화면에서 제목, 평균 평점, 태그를 보여주는 요약 영역.
+/// 상세 화면에서 제목, 개봉 연도, TMDB 평균 평점을 보여주는 요약 영역.
 class MovieSummary extends StatelessWidget {
   const MovieSummary({super.key, required this.movie, required this.myRating});
 
-  final Movie movie;
+  final TmdbMovieDto movie;
 
   /// 사용자가 이번 화면에서 남긴 평점. 아직 남기지 않았다면 null.
   final double? myRating;
 
   @override
   Widget build(BuildContext context) {
+    final String? year = movie.releaseYear;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(movie.title, style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 6),
-        Text(movie.subtitle, style: Theme.of(context).textTheme.bodySmall),
+        // 개봉일이 없으면 연도를 표시하지 않는다.
+        if (year != null) ...<Widget>[
+          const SizedBox(height: 6),
+          Text(year, style: Theme.of(context).textTheme.bodySmall),
+        ],
         const SizedBox(height: 12),
         Row(
           children: <Widget>[
-            // 평균 평점은 수정할 수 없으므로 읽기 전용 Indicator로 표시한다.
+            // TMDB 평점은 10점 만점이므로 별 5개에 맞춰 절반으로 표시한다.
             RatingBarIndicator(
-              rating: movie.rating,
+              rating: movie.voteAverage / 2,
               itemCount: 5,
               itemSize: 18,
               itemBuilder: (BuildContext context, int index) {
@@ -35,7 +40,7 @@ class MovieSummary extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              movie.rating.toStringAsFixed(1),
+              movie.voteAverage.toStringAsFixed(1),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -43,10 +48,7 @@ class MovieSummary extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 4),
-            Text(
-              '(${movie.ratingCount})',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
+            Text('/ 10 (TMDB)', style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
         if (myRating != null) ...<Widget>[
@@ -67,37 +69,7 @@ class MovieSummary extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 16),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: <Widget>[
-            for (final String tag in movie.tags) MovieTagChip(label: tag),
-          ],
-        ),
       ],
-    );
-  }
-}
-
-/// 상세 화면에서 영화의 분위기를 설명하는 태그 Chip.
-class MovieTagChip extends StatelessWidget {
-  const MovieTagChip({super.key, required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1EEF6),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 13, color: AppColors.body),
-      ),
     );
   }
 }
