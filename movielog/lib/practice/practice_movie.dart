@@ -1,6 +1,6 @@
 /// 0주차 Dart 문법 연습에서 사용하는 영화 모델.
 ///
-/// 3주차부터 화면에서 사용하는 모델은 `lib/models/movie.dart`의 `Movie`다.
+/// 5주차부터 화면에서 사용하는 영화 데이터는 TMDB 응답인 `TmdbMovieDto`다.
 class PracticeMovie {
   const PracticeMovie({
     required this.title,
