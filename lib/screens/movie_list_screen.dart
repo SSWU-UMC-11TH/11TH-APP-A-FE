@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../data/mock_movies.dart';
 import '../models/movie.dart';
-import '../services/fake_movie_service.dart';
-import '../services/genre_preference.dart';
+import '../data/services/fake_movie_service.dart';
+import '../data/services/genre_preference.dart';
 import '../widgets/genre_filter_chips.dart';
 import '../widgets/movie_grid.dart';
 import '../widgets/movie_list_empty.dart';
