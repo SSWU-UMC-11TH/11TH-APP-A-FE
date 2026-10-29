@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/models/tmdb_movie_dto.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/movie_formatters.dart';
 import 'tmdb_poster_image.dart';
 
 class PopularMovieCard extends StatelessWidget {
@@ -55,9 +56,8 @@ class PopularMovieCard extends StatelessWidget {
               children: [
                 const Icon(Icons.star, size: 14, color: AppColors.star),
                 const SizedBox(width: 4),
-                // TMDB 평점은 10점 만점이라 앱의 5점 별점에 맞춰 반으로 나눈다.
                 Text(
-                  (movie.voteAverage / 2).toStringAsFixed(1),
+                  toFiveStarRating(movie.voteAverage).toStringAsFixed(1),
                   style: AppTextStyles.bodyMedium,
                 ),
               ],

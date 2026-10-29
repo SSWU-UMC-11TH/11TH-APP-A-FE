@@ -4,9 +4,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
 class MovieListError extends StatelessWidget {
-  const MovieListError({super.key, required this.onRetry});
+  const MovieListError({super.key, required this.onRetry, this.message});
 
   final VoidCallback onRetry;
+  // ViewModel이 상황별 안내 문구를 넘기지 않으면 기본 문구를 쓴다.
+  final String? message;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class MovieListError extends StatelessWidget {
             const Icon(Icons.error_outline, size: 48, color: AppColors.error),
             const SizedBox(height: 12),
             Text(
-              '영화를 불러오지 못했습니다.',
+              message ?? '영화를 불러오지 못했습니다.',
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyLarge.copyWith(letterSpacing: 0),
             ),

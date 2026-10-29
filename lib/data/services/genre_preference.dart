@@ -6,20 +6,25 @@ class GenrePreference {
   GenrePreference({SharedPreferencesAsync? preferences})
     : _preferences = preferences ?? SharedPreferencesAsync();
 
-  static const _selectedGenreKey = 'selected_genre';
-  static const defaultGenre = '전체';
+  // 장르 이름 대신 TMDB 장르 id를 저장한다. 4주차 문자열 값과 섞이지 않게 key를 바꿨다.
+  static const _selectedGenreIdKey = 'selected_genre_id';
 
   final SharedPreferencesAsync _preferences;
 
-  Future<String> read() async {
-    return await _preferences.getString(_selectedGenreKey) ?? defaultGenre;
+  // null이면 전체를 뜻한다.
+  Future<int?> read() async {
+    return _preferences.getInt(_selectedGenreIdKey);
   }
 
-  Future<void> save(String genre) async {
-    await _preferences.setString(_selectedGenreKey, genre);
+  Future<void> save(int? genreId) async {
+    if (genreId == null) {
+      await clear();
+      return;
+    }
+    await _preferences.setInt(_selectedGenreIdKey, genreId);
   }
 
   Future<void> clear() async {
-    await _preferences.remove(_selectedGenreKey);
+    await _preferences.remove(_selectedGenreIdKey);
   }
 }

@@ -13,6 +13,8 @@ class MovieHomeViewModel extends ChangeNotifier {
   static const _popularCount = 5;
 
   List<TmdbMovieDto> popularMovies = const [];
+  // 인기 5개와 겹치지 않도록 그 다음 영화를 추천 카드에 쓴다. 없으면 숨긴다.
+  TmdbMovieDto? heroMovie;
   MovieHomeLoadStatus status = MovieHomeLoadStatus.idle;
   String? message;
 
@@ -27,6 +29,7 @@ class MovieHomeViewModel extends ChangeNotifier {
       final page = await _service.fetchPopular();
       // 5개보다 적게 와도 take는 있는 만큼만 반환한다.
       popularMovies = page.results.take(_popularCount).toList();
+      heroMovie = page.results.skip(_popularCount).firstOrNull;
       status = popularMovies.isEmpty
           ? MovieHomeLoadStatus.empty
           : MovieHomeLoadStatus.success;

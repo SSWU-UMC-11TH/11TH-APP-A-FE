@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../data/mock_movies.dart';
 import '../data/models/tmdb_movie_dto.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../view_models/movie_home_view_model.dart';
 import '../widgets/hero_movie_card.dart';
@@ -18,8 +18,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final heroMovie = movies.first;
-
     // 홈 화면에서는 뒤로 가기를 막는다.
     return PopScope(
       canPop: false,
@@ -45,14 +43,16 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: HeroMovieCard(
-                    movie: heroMovie,
-                    onDetailTap: () => context.push('/movies/${heroMovie.id}'),
-                  ),
+                Consumer<MovieHomeViewModel>(
+                  builder: (context, viewModel, child) {
+                    return _HeroSection(
+                      isLoading:
+                          viewModel.status == MovieHomeLoadStatus.idle ||
+                          viewModel.status == MovieHomeLoadStatus.loading,
+                      movie: viewModel.heroMovie,
+                    );
+                  },
                 ),
-                const SizedBox(height: 24),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: SectionHeader(
@@ -114,9 +114,44 @@ class _PopularMovieList extends StatelessWidget {
           movie: movie,
           rank: index + 1,
           // 배열 index가 아니라 TMDB id를 넘겨야 이후 평점 movieId로 쓸 수 있다.
-          onTap: () => context.push('/movies/${movie.id}'),
+          onTap: () => context.push('/movies/${movie.id}', extra: movie),
         );
       },
+    );
+  }
+}
+
+class _HeroSection extends StatelessWidget {
+  const _HeroSection({required this.isLoading, required this.movie});
+
+  final bool isLoading;
+  final TmdbMovieDto? movie;
+
+  @override
+  Widget build(BuildContext context) {
+    final movie = this.movie;
+
+    // 실패했거나 추천할 영화가 없으면 영역을 숨긴다. 재시도는 인기 영역에서 한다.
+    if (!isLoading && movie == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      child: movie == null
+          // 로딩 중에도 카드 크기를 미리 잡아 화면이 밀리지 않게 한다.
+          ? AspectRatio(
+              aspectRatio: 356 / 504,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLow,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+            )
+          : HeroMovieCard(
+              movie: movie,
+              onDetailTap: () =>
+                  context.push('/movies/${movie.id}', extra: movie),
+            ),
     );
   }
 }

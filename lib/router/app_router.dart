@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../data/models/tmdb_movie_dto.dart';
 import '../data/services/tmdb_movie_service.dart';
 import '../screens/home_screen.dart';
 import '../screens/main_screen.dart';
@@ -11,6 +12,7 @@ import '../screens/my_page_screen.dart';
 import '../screens/signup_screen.dart';
 import '../screens/start_screen.dart';
 import '../view_models/movie_home_view_model.dart';
+import '../view_models/movie_list_view_model.dart';
 
 class AppRouter {
   AppRouter._();
@@ -47,14 +49,25 @@ class AppRouter {
           ),
           GoRoute(
             path: '/movies',
-            builder: (context, state) => const MovieListScreen(),
+            builder: (context, state) =>
+                ChangeNotifierProvider<MovieListViewModel>(
+                  create: (context) =>
+                      MovieListViewModel(context.read<TmdbMovieService>())
+                        ..loadInitial(),
+                  child: const MovieListScreen(),
+                ),
             routes: [
               GoRoute(
                 // 상세 화면은 NavigationBar 없이 전체 화면으로 표시
                 parentNavigatorKey: _rootNavigatorKey,
+                // 주소에는 배열 index가 아니라 TMDB id가 들어간다.
                 path: ':movieId',
-                builder: (context, state) =>
-                    MovieDetailScreen(movieId: state.pathParameters['movieId']),
+                builder: (context, state) {
+                  final extra = state.extra;
+                  return MovieDetailScreen(
+                    movie: extra is TmdbMovieDto ? extra : null,
+                  );
+                },
               ),
             ],
           ),
