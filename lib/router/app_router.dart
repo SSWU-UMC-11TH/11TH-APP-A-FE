@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
+import '../data/services/tmdb_movie_service.dart';
 import '../screens/home_screen.dart';
 import '../screens/main_screen.dart';
 import '../screens/movie_detail_screen.dart';
@@ -8,6 +10,7 @@ import '../screens/movie_list_screen.dart';
 import '../screens/my_page_screen.dart';
 import '../screens/signup_screen.dart';
 import '../screens/start_screen.dart';
+import '../view_models/movie_home_view_model.dart';
 
 class AppRouter {
   AppRouter._();
@@ -33,7 +36,14 @@ class AppRouter {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (context, state) => const HomeScreen(),
+            // 화면별 ViewModel은 Route 안에서 만들고, 생성 시 한 번만 불러온다.
+            builder: (context, state) =>
+                ChangeNotifierProvider<MovieHomeViewModel>(
+                  create: (context) =>
+                      MovieHomeViewModel(context.read<TmdbMovieService>())
+                        ..loadPopular(),
+                  child: const HomeScreen(),
+                ),
           ),
           GoRoute(
             path: '/movies',
