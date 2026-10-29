@@ -1,15 +1,17 @@
 import 'package:dio/dio.dart';
 
+import '../models/tmdb_movie_page.dart';
+
+// HTTP 요청과 DTO 변환만 담당한다. 개수 제한 같은 화면 정책은 ViewModel이 맡는다.
 class TmdbMovieService {
   TmdbMovieService(this._dio);
   final Dio _dio;
 
-  // Step 1에서는 응답 원본을 반환하고, Step 2에서 DTO 변환을 추가한다.
-  Future<Map<String, dynamic>> fetchPopular({int page = 1}) async {
+  Future<TmdbMoviePageDto> fetchPopular({int page = 1}) async {
     final response = await _dio.get(
       '/movie/popular',
       queryParameters: {'language': 'ko-KR', 'page': page},
     );
-    return response.data as Map<String, dynamic>;
+    return TmdbMoviePageDto.fromJson(response.data as Map<String, dynamic>);
   }
 }

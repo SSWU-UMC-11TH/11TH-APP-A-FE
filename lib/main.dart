@@ -13,10 +13,25 @@ Future<void> main() async {
   // 로드가 끝나기 전에 값을 읽으면 빈 값이 되므로 runApp 전에 기다린다.
   await dotenv.load(fileName: '.env');
 
-  // Guided Step 1 확인용 첫 호출: Step 3에서 ViewModel로 옮긴다.
+  // Guided Step 1·2 확인용 호출: Step 3에서 ViewModel로 옮긴다.
   if (kDebugMode) {
     debugPrint('[TMDB] Token 로드 여부: ${TmdbConfig.hasAccessToken}');
-    TmdbMovieService(createTmdbClient()).fetchPopular().ignore();
+    TmdbMovieService(createTmdbClient())
+        .fetchPopular()
+        .then((page) {
+          // 5개보다 적게 와도 take는 있는 만큼만 반환한다.
+          final topFive = page.results.take(5).toList();
+          debugPrint(
+            '[TMDB] page ${page.page}/${page.totalPages}, '
+            'results ${page.results.length}개 → 인기 ${topFive.length}개',
+          );
+          for (final movie in topFive) {
+            debugPrint(
+              '[TMDB] id=${movie.id} ${movie.title} poster=${movie.posterPath}',
+            );
+          }
+        })
+        .ignore();
   }
 
   runApp(const MyApp());
