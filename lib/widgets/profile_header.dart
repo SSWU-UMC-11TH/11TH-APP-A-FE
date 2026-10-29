@@ -41,10 +41,7 @@ class ProfileHeader extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             const Flexible(
-              child: Text(
-                '무비러버',
-                style: AppTextStyles.titleSmall,
-              ),
+              child: Text('무비러버', style: AppTextStyles.titleSmall),
             ),
           ],
         ),

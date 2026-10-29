@@ -19,17 +19,11 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: titleStyle,
-      ),
+      title: Text(title, style: titleStyle),
       centerTitle: centerTitle,
       leading: onBack == null
           ? null
-          : IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: onBack,
-            ),
+          : IconButton(icon: const Icon(Icons.arrow_back), onPressed: onBack),
       actions: actions,
     );
   }
