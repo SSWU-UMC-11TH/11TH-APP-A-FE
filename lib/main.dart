@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'router/app_router.dart';
-import 'theme/app_theme.dart';
+import 'app/movie_log_app.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'MovieLog',
-      theme: AppTheme.light,
-      routerConfig: AppRouter.router,
-    );
-  }
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 로드가 끝나기 전에 값을 읽으면 빈 값이 되므로 runApp 전에 기다린다.
+  await dotenv.load(fileName: '.env');
+  runApp(const MovieLogApp());
 }

@@ -5,8 +5,14 @@ import '../theme/app_text_styles.dart';
 import 'movie_rating_input.dart';
 
 class RatingDialog extends StatefulWidget {
-  const RatingDialog({super.key, this.initialRating = 0});
+  const RatingDialog({
+    super.key,
+    required this.movieId,
+    this.initialRating = 0,
+  });
 
+  // TMDB 영화 id. 이후 평점 저장 API의 movieId로 그대로 보낸다.
+  final int movieId;
   final double initialRating;
 
   @override

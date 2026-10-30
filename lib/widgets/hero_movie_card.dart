@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/movie_formatters.dart';
+import 'tmdb_poster_image.dart';
 
 class HeroMovieCard extends StatelessWidget {
   const HeroMovieCard({super.key, required this.movie, this.onDetailTap});
 
-  final Movie movie;
+  final TmdbMovieDto movie;
   final VoidCallback? onDetailTap;
 
   @override
   Widget build(BuildContext context) {
+    final year = releaseYear(movie.releaseDate);
+
     return AspectRatio(
       aspectRatio: 356 / 504,
       child: ClipRRect(
@@ -19,7 +23,7 @@ class HeroMovieCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(movie.posterAsset, fit: BoxFit.cover),
+            TmdbPosterImage(posterPath: movie.posterPath),
             // 글자가 잘 보이도록 아래쪽을 어둡게 덮는다.
             DecoratedBox(
               decoration: BoxDecoration(
@@ -50,13 +54,16 @@ class HeroMovieCard extends StatelessWidget {
                       color: AppColors.white,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${movie.genre} · ${movie.year}',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.8),
+                  // release_date가 없으면 연도 줄을 표시하지 않는다.
+                  if (year != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      year,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.8),
+                      ),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: onDetailTap,

@@ -17,9 +17,7 @@ class EditProfileButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         tapTargetSize: MaterialTapTargetSize.padded,
         side: const BorderSide(color: AppColors.violet),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         textStyle: AppTextStyles.bodyLarge.copyWith(
           fontWeight: FontWeight.w600,
         ),

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import 'movie_card.dart';
 
 class MovieGrid extends StatelessWidget {
-  const MovieGrid({super.key, required this.movies});
+  const MovieGrid({
+    super.key,
+    required this.movies,
+    this.genreNameById = const {},
+  });
 
-  final List<Movie> movies;
+  final List<TmdbMovieDto> movies;
+  final Map<int, String> genreNameById;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +41,13 @@ class MovieGrid extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             final movie = movies[index];
+            // 대표 장르로 첫 번째 genre_id의 이름을 보여준다.
+            final firstGenreId = movie.genreIds.firstOrNull;
             return MovieCard(
               movie: movie,
-              onTap: () => context.push('/movies/${movie.id}'),
+              genreName: genreNameById[firstGenreId],
+              // 배열 index가 아니라 TMDB id로 이동해야 이후 평점 movieId로 쓸 수 있다.
+              onTap: () => context.push('/movies/${movie.id}', extra: movie),
             );
           },
         );

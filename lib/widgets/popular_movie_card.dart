@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/movie_formatters.dart';
+import 'tmdb_poster_image.dart';
 
 class PopularMovieCard extends StatelessWidget {
   const PopularMovieCard({
@@ -12,7 +14,7 @@ class PopularMovieCard extends StatelessWidget {
     this.onTap,
   });
 
-  final Movie movie;
+  final TmdbMovieDto movie;
   final int rank;
   final VoidCallback? onTap;
 
@@ -33,7 +35,7 @@ class PopularMovieCard extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.asset(movie.posterAsset, fit: BoxFit.cover),
+                    child: TmdbPosterImage(posterPath: movie.posterPath),
                   ),
                   Positioned(top: 8, left: 8, child: _RankBadge(rank: rank)),
                 ],
@@ -55,7 +57,7 @@ class PopularMovieCard extends StatelessWidget {
                 const Icon(Icons.star, size: 14, color: AppColors.star),
                 const SizedBox(width: 4),
                 Text(
-                  movie.rating.toStringAsFixed(1),
+                  toFiveStarRating(movie.voteAverage).toStringAsFixed(1),
                   style: AppTextStyles.bodyMedium,
                 ),
               ],

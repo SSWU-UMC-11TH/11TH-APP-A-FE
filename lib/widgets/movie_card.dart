@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/movie_formatters.dart';
+import 'tmdb_poster_image.dart';
 
 class MovieCard extends StatelessWidget {
-  const MovieCard({super.key, required this.movie, this.onTap});
+  const MovieCard({super.key, required this.movie, this.genreName, this.onTap});
 
-  final Movie movie;
+  final TmdbMovieDto movie;
+  final String? genreName;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    // 연도나 장르가 없으면 있는 값만 보여준다.
+    final subtitle = [?releaseYear(movie.releaseDate), ?genreName].join(' · ');
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -26,12 +32,14 @@ class MovieCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(movie.posterAsset, fit: BoxFit.cover),
+                  child: TmdbPosterImage(posterPath: movie.posterPath),
                 ),
                 Positioned(
                   top: 8,
                   right: 8,
-                  child: _RatingBadge(rating: movie.rating),
+                  child: _RatingBadge(
+                    rating: toFiveStarRating(movie.voteAverage),
+                  ),
                 ),
               ],
             ),
@@ -47,7 +55,7 @@ class MovieCard extends StatelessWidget {
             ),
           ),
           Text(
-            '${movie.year} · ${movie.genre}',
+            subtitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodyMedium,
