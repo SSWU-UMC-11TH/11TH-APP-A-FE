@@ -1,3 +1,10 @@
+import 'package:flutter/material.dart';
+
+import '../screens/my_ratings_screen.dart';
+import '../view_models/my_ratings_view_model.dart';
+import '../data/services/rating_api_service.dart';
+import '../data/services/tmdb_movie_service.dart';
+
 import 'package:provider/provider.dart';
 
 import '../data/services/member_check_service.dart';
@@ -16,7 +23,10 @@ import '../start_screen.dart';
 class AppRouter {
   AppRouter._();
 
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static final router = GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/start',
     routes: [
       GoRoute(path: '/start', builder: (context, state) => const StartScreen()),
@@ -59,6 +69,19 @@ class AppRouter {
               GoRoute(
                 path: '/my',
                 builder: (context, state) => const ProfileScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'ratings',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => ChangeNotifierProvider(
+                      create: (context) => MyRatingsViewModel(
+                        context.read<RatingApiService>(),
+                        context.read<TmdbMovieService>(),
+                      )..load(),
+                      child: const MyRatingsScreen(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
