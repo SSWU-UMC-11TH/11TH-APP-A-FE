@@ -1,4 +1,10 @@
+import 'package:provider/provider.dart';
+
+import 'view_models/sign_up_view_model.dart';
+import 'widgets/movielog_button.dart';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'common_app_bar.dart';
 import 'theme/app_colors.dart';
@@ -37,14 +43,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _nicknameController.text.trim().length >= 2 &&
       _emailRegExp.hasMatch(_emailController.text.trim()) &&
       _passwordController.text.length >= 8 &&
-      _agreedToTerms;
+      _agreedToTerms &&
+      context.read<SignUpViewModel>().bothAvailable;
 
   void _submit() {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('가입이 완료되었습니다.')));
+        .showSnackBar(const SnackBar(content: Text('입력 확인이 완료되었습니다.')));
+    context.go('/home');
   }
 
   String? _validateNickname(String? value) {
@@ -70,8 +78,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SignUpViewModel>();
     return Scaffold(
-      appBar: CommonAppBar(title: '회원가입', centerTitle: true, onBack: () {}),
+      appBar: const CommonAppBar(title: '회원가입', centerTitle: true),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -140,20 +149,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 setState(() => _agreedToTerms = value),
                           ),
                           const SizedBox(height: 16),
-                          ElevatedButton(
+                          MovieLogButton(
+                            label: '가입하기',
+                            width: double.infinity,
+                            height: 56,
                             onPressed: _canSubmit ? _submit : null,
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(56),
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: AppColors.onPrimary,
-                              disabledBackgroundColor: AppColors.primary
-                                  .withValues(alpha: 0.3),
-                              disabledForegroundColor: AppColors.onPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text('가입하기'),
                           ),
                           const SizedBox(height: 24),
                           const _LoginPrompt(),
@@ -211,9 +211,22 @@ class _LabeledTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<SignUpViewModel>();
+    final nickname = label == '닉네임';
+    final email = label == '이메일';
+    final needsCheck = nickname || email;
+    final status = nickname ? vm.nicknameCheckStatus : vm.emailCheckStatus;
+    final serverError = needsCheck
+        ? (nickname ? vm.nicknameErrorText : vm.emailErrorText)
+        : null;
+    final canCheck = nickname ? vm.canCheckNickname : vm.canCheckEmail;
+
     final text = controller.text;
-    final hasError = text.isNotEmpty && validator(text) != null;
-    final isValid = text.isNotEmpty && !hasError;
+    final hasError =
+        serverError != null || (text.isNotEmpty && validator(text) != null);
+    final isValid =
+        !hasError &&
+        (needsCheck ? status == CheckStatus.available : text.isNotEmpty);
 
     OutlineInputBorder border(Color color, [double width = 1]) {
       return OutlineInputBorder(
@@ -227,35 +240,78 @@ class _LabeledTextField extends StatelessWidget {
       children: [
         Text(label, style: AppTextStyles.titleMedium),
         const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.gray),
-            filled: true,
-            fillColor: hasError
-                ? AppColors.errorContainer
-                : AppColors.inputFill,
-            contentPadding: const EdgeInsets.all(16),
-            suffixIcon: hasError
-                ? const Icon(Icons.error_outline, color: AppColors.error)
-                : isValid
-                ? const Icon(Icons.check_circle, color: AppColors.primary)
-                : null,
-            enabledBorder: border(AppColors.inputBorder),
-            focusedBorder: border(AppColors.primary, 2),
-            errorBorder: border(AppColors.error),
-            focusedErrorBorder: border(AppColors.error, 2),
-            errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
-          ),
-          keyboardType: keyboardType,
-          textInputAction: textInputAction,
-          obscureText: obscureText,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          validator: validator,
-          onChanged: onChanged,
-          onFieldSubmitted: onFieldSubmitted,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: controller,
+                focusNode: focusNode,
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  errorText: serverError,
+                  helperText: needsCheck
+                      ? status == CheckStatus.available
+                            ? '사용 가능한 $label입니다.'
+                            : status == CheckStatus.checking
+                            ? '$label 확인 중입니다.'
+                            : null
+                      : null,
+                  hintStyle: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.gray,
+                  ),
+                  filled: true,
+                  fillColor: hasError
+                      ? AppColors.errorContainer
+                      : AppColors.inputFill,
+                  contentPadding: const EdgeInsets.all(16),
+                  suffixIcon: hasError
+                      ? const Icon(Icons.error_outline, color: AppColors.error)
+                      : isValid
+                      ? const Icon(Icons.check_circle, color: AppColors.primary)
+                      : null,
+                  enabledBorder: border(AppColors.inputBorder),
+                  focusedBorder: border(AppColors.primary, 2),
+                  errorBorder: border(AppColors.error),
+                  focusedErrorBorder: border(AppColors.error, 2),
+                  errorStyle: const TextStyle(
+                    color: AppColors.error,
+                    fontSize: 12,
+                  ),
+                ),
+                keyboardType: keyboardType,
+                textInputAction: textInputAction,
+                obscureText: obscureText,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: validator,
+                onChanged: (value) {
+                  if (nickname) vm.onNicknameChanged(value);
+                  if (email) vm.onEmailChanged(value);
+                  onChanged(value);
+                },
+                onFieldSubmitted: onFieldSubmitted,
+              ),
+            ),
+            if (needsCheck) ...[
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: MovieLogButton(
+                  label: '중복 확인',
+                  isLoading: status == CheckStatus.checking,
+                  onPressed: canCheck
+                      ? () {
+                          if (nickname) {
+                            vm.checkNickname(controller.text);
+                          } else {
+                            vm.checkEmail(controller.text);
+                          }
+                        }
+                      : null,
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );
