@@ -1,3 +1,8 @@
+import 'package:provider/provider.dart';
+
+import '../data/services/member_check_service.dart';
+import '../view_models/sign_up_view_model.dart';
+
 import 'package:go_router/go_router.dart';
 
 import '../profile_screen.dart';
@@ -17,7 +22,11 @@ class AppRouter {
       GoRoute(path: '/start', builder: (context, state) => const StartScreen()),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const SignUpScreen(),
+        builder: (context, state) => ChangeNotifierProvider(
+          create: (context) =>
+              SignUpViewModel(context.read<MemberCheckService>()),
+          child: const SignUpScreen(),
+        ),
       ),
       GoRoute(
         path: '/movies/:movieId',
