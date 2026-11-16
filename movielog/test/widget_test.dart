@@ -6,20 +6,32 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:movielog/app/movie_log_app.dart';
 import 'package:movielog/router/app_router.dart';
+import 'package:movielog/screens/my_ratings_screen.dart';
 import 'package:movielog/widgets/common_app_bar.dart';
 import 'package:movielog/widgets/genre_chip_list.dart';
 import 'package:movielog/widgets/movie_card.dart';
 import 'package:movielog/widgets/movie_grid.dart';
 import 'package:movielog/widgets/movie_list_error.dart';
+import 'package:movielog/widgets/movielog_button.dart';
+import 'package:movielog/widgets/my_ratings_entry.dart';
+import 'package:movielog/widgets/rating_card.dart';
 import 'package:movielog/widgets/stat_item.dart';
 
+import 'support/fake_movie_log_services.dart';
 import 'support/fake_tmdb_movie_service.dart';
 
 late FakeTmdbMovieService service;
+late FakeRatingApiService ratingService;
 
 /// GoRouter는 앱 전체에서 하나만 사용하므로 테스트마다 시작 위치로 되돌린다.
 Future<void> pumpAppAtStart(WidgetTester tester) async {
-  await tester.pumpWidget(MovieLogApp(movieService: service));
+  await tester.pumpWidget(
+    MovieLogApp(
+      movieService: service,
+      memberCheckService: FakeMemberCheckService(),
+      ratingApiService: ratingService,
+    ),
+  );
   AppRouter.router.go('/start');
   await tester.pumpAndSettle();
 }
@@ -32,6 +44,10 @@ Future<void> goToHome(WidgetTester tester) async {
   await tester.enterText(find.byType(TextFormField).at(0), '무비러버');
   await tester.enterText(find.byType(TextFormField).at(1), 'movie@example.com');
   await tester.enterText(find.byType(TextFormField).at(2), 'password123');
+  await tester.pumpAndSettle();
+  // 6주차부터 닉네임·이메일 중복 확인을 마쳐야 가입할 수 있다.
+  await tester.tap(find.byType(MovieLogButton).at(0));
+  await tester.tap(find.byType(MovieLogButton).at(1));
   await tester.tap(find.byType(Checkbox));
   await tester.pumpAndSettle();
   // 테스트 화면(800x600)에서는 가입 버튼이 아래로 벗어나므로 스크롤한 뒤 누른다.
@@ -55,7 +71,8 @@ void main() {
       popular: [
         for (var id = 1; id <= 20; id++) fixtureMovie(id, title: '인기 영화 $id'),
       ],
-    );
+    )..detailById = {680: fixtureMovie(680, title: '펄프 픽션')};
+    ratingService = FakeRatingApiService();
   });
 
   testWidgets('시작 화면의 로고, 문구, 버튼이 표시된다', (WidgetTester tester) async {
@@ -246,5 +263,78 @@ void main() {
     expect(find.text('342'), findsOneWidget);
     expect(find.byType(Chip), findsNWidgets(3));
     expect(find.widgetWithText(TextButton, '프로필 수정'), findsOneWidget);
+    expect(find.byType(MyRatingsEntry), findsOneWidget);
+  });
+
+  testWidgets('마이페이지에서 내가 등록한 평점으로 들어가면 하단 탭이 없고, 뒤로가면 돌아온다', (
+    WidgetTester tester,
+  ) async {
+    await pumpAppAtStart(tester);
+    AppRouter.router.go('/my');
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('내가 등록한 평점'));
+    await tester.tap(find.text('내가 등록한 평점'));
+    await tester.pumpAndSettle();
+
+    expect(AppRouter.router.state.uri.path, '/my/ratings');
+    expect(find.byType(MyRatingsScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+    expect(ratingService.calls, [1]);
+    expect(find.text('학습용 회원(memberId 1)의 공개 평점입니다.'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pumpAndSettle();
+    expect(find.text('내 프로필'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
+  testWidgets('평점 목록은 Loading 뒤 TMDB 제목과 placeholder 카드를 함께 보여준다', (
+    WidgetTester tester,
+  ) async {
+    ratingService.gate = Completer<void>();
+    await pumpAppAtStart(tester);
+    AppRouter.router.go('/my/ratings');
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('평점을 불러오는 중이에요'), findsOneWidget);
+
+    ratingService.gate!.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RatingCard), findsNWidgets(2));
+    // 680은 TMDB 제목, 13은 TMDB에서 찾지 못해 movieId로 대신한다.
+    expect(find.text('펄프 픽션'), findsOneWidget);
+    expect(find.text('별점 4 / 5'), findsOneWidget);
+    expect(find.text('다시 봐도 좋다'), findsOneWidget);
+    expect(find.text('영화 #13'), findsOneWidget);
+    expect(find.text('포스터 정보 없음'), findsOneWidget);
+    expect(find.text('2026.09.06 등록'), findsNWidgets(2));
+    expect(find.text('일부 영화 정보를 가져오지 못해 제목·포스터를 대신 표시합니다.'), findsOneWidget);
+  });
+
+  testWidgets('평점이 없으면 Empty, 실패하면 Error와 고정 너비 다시 시도 버튼을 보여준다', (
+    WidgetTester tester,
+  ) async {
+    ratingService.ratings = [];
+    await pumpAppAtStart(tester);
+    AppRouter.router.go('/my/ratings');
+    await tester.pumpAndSettle();
+    expect(find.text('아직 등록한 평점이 없어요'), findsOneWidget);
+
+    ratingService.failStatus = 404;
+    AppRouter.router.go('/my');
+    await tester.pumpAndSettle();
+    AppRouter.router.go('/my/ratings');
+    await tester.pumpAndSettle();
+    expect(find.text('존재하지 않는 회원입니다.'), findsOneWidget);
+    final Finder retry = find.widgetWithText(MovieLogButton, '다시 시도');
+    expect(tester.getSize(retry).width, 120);
+
+    ratingService.failStatus = null;
+    ratingService.ratings = [fixtureRating(1, movieId: 680)];
+    await tester.tap(retry);
+    await tester.pumpAndSettle();
+    expect(find.byType(RatingCard), findsOneWidget);
   });
 }

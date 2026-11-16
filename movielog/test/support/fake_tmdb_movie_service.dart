@@ -50,6 +50,14 @@ class FakeTmdbMovieService implements TmdbMovieService {
 
   final List<({int page, int? genreId})> discoverCalls = [];
 
+  /// 상세 조회 결과. 값이 없는 movieId는 TMDB 404처럼 null을 돌려준다.
+  Map<int, TmdbMovieDto> detailById = {};
+
+  /// 여기에 든 movieId는 상세 조회가 통신 실패(DioException)로 끝난다.
+  Set<int> failDetailIds = {};
+
+  final List<int> detailCalls = [];
+
   /// 장르마다 다른 id를 갖는 20개짜리 페이지를 [totalPages]만큼 돌려준다.
   static TmdbMoviePageDto Function(int, int?) pagedDiscover({
     required int totalPages,
@@ -98,5 +106,26 @@ class FakeTmdbMovieService implements TmdbMovieService {
   Future<List<TmdbGenreDto>> fetchGenres() async {
     if (failGenres) throw _error('/genre/movie/list');
     return genres;
+  }
+
+  @override
+  Future<TmdbMovieDto> fetchMovieDetail(int movieId) async {
+    final movie = await findMovieById(movieId);
+    if (movie == null) {
+      final options = RequestOptions(path: '/movie/$movieId');
+      throw DioException(
+        requestOptions: options,
+        response: Response(requestOptions: options, statusCode: 404),
+        type: DioExceptionType.badResponse,
+      );
+    }
+    return movie;
+  }
+
+  @override
+  Future<TmdbMovieDto?> findMovieById(int movieId) async {
+    detailCalls.add(movieId);
+    if (failDetailIds.contains(movieId)) throw _error('/movie/$movieId');
+    return detailById[movieId];
   }
 }
