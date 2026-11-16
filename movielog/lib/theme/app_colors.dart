@@ -49,4 +49,13 @@ abstract final class AppColors {
 
   /// 조건을 아직 충족하지 못한 비활성 버튼 배경
   static const Color primaryDisabled = Color(0xFFC3BAE0);
+
+  /// 통신 중이라 잠시 누를 수 없는 버튼 배경
+  static const Color loading = Color(0xFF6F6B76);
+
+  /// 사용 가능 확인처럼 성공을 알리는 안내 문구
+  static const Color success = Color(0xFF2E7D32);
+
+  /// 확인 중처럼 진행 상황을 알리는 안내 문구
+  static const Color info = Color(0xFF1F63B8);
 }
