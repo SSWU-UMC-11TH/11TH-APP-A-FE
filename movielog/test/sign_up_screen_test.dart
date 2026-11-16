@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:movielog/main.dart';
+import 'package:movielog/app/movie_log_app.dart';
 import 'package:movielog/router/app_router.dart';
 import 'package:movielog/screens/sign_up_screen.dart';
 import 'package:movielog/widgets/terms_checkbox.dart';
 
+import 'support/fake_tmdb_movie_service.dart';
+
 /// 앱을 띄우고 회원가입 화면으로 이동한다.
 Future<void> pumpSignUp(WidgetTester tester) async {
-  await tester.pumpWidget(const MovieLogApp());
+  await tester.pumpWidget(MovieLogApp(movieService: FakeTmdbMovieService()));
   AppRouter.router.go('/register');
   await tester.pumpAndSettle();
 }

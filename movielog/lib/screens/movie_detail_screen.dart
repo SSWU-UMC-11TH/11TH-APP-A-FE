@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import '../theme/app_colors.dart';
 import '../widgets/movie_share_sheet.dart';
 import '../widgets/movie_summary.dart';
 import '../widgets/rating_dialog.dart';
+import '../widgets/tmdb_poster_image.dart';
 
 /// 영화 상세 화면.
 ///
-/// Path Parameter로 받은 ID로 Mock Movie를 찾아 보여준다.
+/// Path Parameter로 TMDB `id`를, `extra`로 목록에서 누른 [TmdbMovieDto]를 받는다.
 class MovieDetailScreen extends StatefulWidget {
-  const MovieDetailScreen({super.key, required this.movieId});
+  const MovieDetailScreen({super.key, required this.movieId, this.movie});
 
   final String? movieId;
+
+  /// 목록·홈에서 전달한 영화. URL로 직접 들어오면 null이다.
+  final TmdbMovieDto? movie;
 
   @override
   State<MovieDetailScreen> createState() => _MovieDetailScreenState();
@@ -26,25 +30,30 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   /// 이 화면에서만 유지하는 내 평점 (Mock).
   double? _myRating;
 
-  Future<void> _openRatingDialog(Movie movie) async {
-    final double? rating = await showDialog<double>(
+  Future<void> _openRatingDialog(TmdbMovieDto movie) async {
+    final RatingResult? result = await showDialog<RatingResult>(
       context: context,
       builder: (BuildContext dialogContext) {
-        return RatingDialog(initialRating: _myRating ?? 0);
+        // 배열 index가 아니라 TMDB id를 평점의 movieId로 넘긴다.
+        return RatingDialog(movieId: movie.id, initialRating: _myRating ?? 0);
       },
     );
 
-    if (rating == null || !mounted) return;
+    if (result == null || !mounted) return;
 
+    // TODO(평점 저장 API): result.movieId, result.score로 MovieLog 평점 저장 요청을 보낸다.
+    debugPrint('[평점] movieId=${result.movieId}, score=${result.score}');
     setState(() {
-      _myRating = rating;
+      _myRating = result.score;
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${rating.toStringAsFixed(1)}점으로 평점을 남겼어요.')),
+      SnackBar(
+        content: Text('${result.score.toStringAsFixed(1)}점으로 평점을 남겼어요.'),
+      ),
     );
   }
 
-  void _toggleFavorite(Movie movie) {
+  void _toggleFavorite(TmdbMovieDto movie) {
     setState(() {
       _isFavorite = !_isFavorite;
     });
@@ -59,7 +68,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 
-  Future<void> _openShareSheet(Movie movie) async {
+  Future<void> _openShareSheet(TmdbMovieDto movie) async {
     final String? selected = await showModalBottomSheet<String>(
       context: context,
       useSafeArea: true,
@@ -71,17 +80,17 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     if (selected == null || !mounted) return;
 
     // BottomSheet가 닫힌 뒤에 Snackbar를 띄워야 가려지지 않는다.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$selected을(를) 실행했어요.')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('$selected을(를) 실행했어요.')));
   }
 
   @override
   Widget build(BuildContext context) {
-    // Path Parameter는 String이므로 int로 바꿔 Mock Data에서 찾는다.
-    final Movie? movie = findMovieById(int.tryParse(widget.movieId ?? ''));
+    // Path Parameter의 id와 전달받은 영화의 id가 같을 때만 보여준다.
+    final TmdbMovieDto? movie = widget.movie;
+    final int? movieId = int.tryParse(widget.movieId ?? '');
 
-    if (movie == null) {
+    if (movie == null || movie.id != movieId) {
       return const _MovieNotFound();
     }
 
@@ -115,7 +124,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         children: <Widget>[
           AspectRatio(
             aspectRatio: 16 / 10,
-            child: Image.asset(movie.posterAsset, fit: BoxFit.cover),
+            // 가로 이미지(backdrop)가 없으면 포스터를, 둘 다 없으면 placeholder를 보여준다.
+            child: TmdbPosterImage(
+              posterPath: movie.backdropPath ?? movie.posterPath,
+              size: 'w780',
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
@@ -126,10 +139,21 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 const SizedBox(height: 28),
                 Text('시놉시스', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 12),
-                Text(
-                  movie.synopsis,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                if (movie.overview.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        '줄거리 정보가 없어요.',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    movie.overview,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
               ],
             ),
           ),

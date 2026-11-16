@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../models/movie.dart';
+import '../data/models/tmdb_movie_dto.dart';
 import 'movie_card.dart';
 
 /// 영화 카드를 2열 Grid로 보여주는 Success 상태 화면.
 class MovieGrid extends StatelessWidget {
   const MovieGrid({super.key, required this.movies});
 
-  final List<Movie> movies;
+  final List<TmdbMovieDto> movies;
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +21,7 @@ class MovieGrid extends StatelessWidget {
         childAspectRatio: 0.58,
       ),
       itemBuilder: (BuildContext context, int index) {
-        final Movie movie = movies[index];
-        return MovieCard(movie: movie);
+        return MovieCard(movie: movies[index]);
       },
     );
   }
