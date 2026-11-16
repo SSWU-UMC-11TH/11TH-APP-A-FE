@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../models/tmdb_genre_dto.dart';
+import '../models/tmdb_movie_dto.dart';
 import '../models/tmdb_movie_page.dart';
 
 /// TMDB와 직접 통신하는 Service.
@@ -49,5 +50,26 @@ class TmdbMovieService {
     return genres
         .map((item) => TmdbGenreDto.fromJson(item as Map<String, dynamic>))
         .toList();
+  }
+
+  /// movieId 하나로 영화 한 편을 조회한다. TMDB는 영화 객체를 Wrapper 없이 돌려준다.
+  ///
+  /// 상세 응답에는 `genre_ids` 대신 `genres`가 오므로 [TmdbMovieDto.genreIds]는 비어 있다.
+  Future<TmdbMovieDto> fetchMovieDetail(int movieId) async {
+    final response = await _dio.get(
+      '/movie/$movieId',
+      queryParameters: {'language': 'ko-KR'},
+    );
+    return TmdbMovieDto.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// TMDB에 없는 영화(404)만 null로 바꾸고, 나머지 통신 실패는 그대로 던진다.
+  Future<TmdbMovieDto?> findMovieById(int movieId) async {
+    try {
+      return await fetchMovieDetail(movieId);
+    } on DioException catch (error) {
+      if (error.response?.statusCode == 404) return null;
+      rethrow;
+    }
   }
 }
