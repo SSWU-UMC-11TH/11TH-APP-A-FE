@@ -38,9 +38,7 @@ Future<void> enterValidInputs(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('입력 전에는 오류 메시지가 없고 가입 버튼이 비활성화된다', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('입력 전에는 오류 메시지가 없고 가입 버튼이 비활성화된다', (WidgetTester tester) async {
     await pumpSignUp(tester);
 
     expect(find.byType(SignUpScreen), findsOneWidget);
@@ -78,9 +76,7 @@ void main() {
     expect(find.text('닉네임을 입력해주세요.'), findsOneWidget);
   });
 
-  testWidgets('모든 입력이 유효하고 약관에 동의해야 가입 버튼이 활성화된다', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('모든 입력이 유효하고 약관에 동의해야 가입 버튼이 활성화된다', (WidgetTester tester) async {
     await pumpSignUp(tester);
 
     await enterValidInputs(tester);

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import 'package:movielog/main.dart';
 import 'package:movielog/router/app_router.dart';
@@ -35,7 +37,20 @@ Future<void> goToHome(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// 영화 목록은 FakeMovieService가 1초 뒤 완료되므로 그만큼 시간을 흘려 Success 상태로 만든다.
+Future<void> settleMovieList(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(const Duration(seconds: 1));
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  setUp(() {
+    // 영화 목록 화면이 장르를 저장·복원할 때 실제 저장소 대신 메모리를 사용한다.
+    SharedPreferencesAsyncPlatform.instance =
+        InMemorySharedPreferencesAsync.empty();
+  });
+
   testWidgets('시작 화면의 로고, 문구, 버튼이 표시된다', (WidgetTester tester) async {
     await pumpAppAtStart(tester);
 
@@ -59,7 +74,7 @@ void main() {
     await goToHome(tester);
 
     await tester.tap(find.byIcon(Icons.movie_outlined).last);
-    await tester.pumpAndSettle();
+    await settleMovieList(tester);
     expect(find.text('전체'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.person_outline));
@@ -92,7 +107,7 @@ void main() {
     await goToHome(tester);
 
     AppRouter.router.go('/movies');
-    await tester.pumpAndSettle();
+    await settleMovieList(tester);
     expect(find.text('별빛 아래 우리'), findsOneWidget);
 
     await tester.tap(find.text('SF'));
