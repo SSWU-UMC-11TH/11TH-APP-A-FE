@@ -4,25 +4,33 @@ import 'package:provider/provider.dart';
 
 import '../data/models/tmdb_movie_dto.dart';
 import '../data/services/member_check_service.dart';
+import '../data/services/rating_api_service.dart';
 import '../data/services/tmdb_movie_service.dart';
 
 import '../screens/home_screen.dart';
 import '../screens/main_screen.dart';
 import '../screens/movie_detail_screen.dart';
 import '../screens/movie_list_screen.dart';
+import '../screens/my_ratings_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/sign_up_screen.dart';
 import '../screens/start_screen.dart';
 import '../view_models/movie_home_view_model.dart';
 import '../view_models/movie_list_view_model.dart';
+import '../view_models/my_ratings_view_model.dart';
 import '../view_models/sign_up_view_model.dart';
 
 /// 앱에서 사용하는 Route를 모아 관리하는 클래스.
 class AppRouter {
   AppRouter._();
 
+  /// 앱 전체의 root Navigator. ShellRoute 밖에 띄울 자식 화면이 이 키를 지정한다.
+  static final GlobalKey<NavigatorState> rootNavigatorKey =
+      GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
     initialLocation: '/start',
+    navigatorKey: rootNavigatorKey,
     routes: <RouteBase>[
       GoRoute(
         path: '/start',
@@ -82,6 +90,23 @@ class AppRouter {
             path: '/my',
             builder: (BuildContext context, GoRouterState state) =>
                 const ProfileScreen(),
+            routes: <RouteBase>[
+              GoRoute(
+                path: 'ratings', // 최종 경로: /my/ratings
+                // 지정하지 않으면 ShellRoute의 Navigator에 쌓여 NavigationBar가 남으므로
+                // root Navigator 위에 띄워 NavigationBar를 가린다.
+                parentNavigatorKey: rootNavigatorKey,
+                builder: (BuildContext context, GoRouterState state) =>
+                    ChangeNotifierProvider<MyRatingsViewModel>(
+                      create: (BuildContext context) => MyRatingsViewModel(
+                        context.read<RatingApiService>(),
+                        context.read<TmdbMovieService>(),
+                        sampleMemberId, // 6주차는 학습용 memberId 1이다.
+                      )..load(),
+                      child: const MyRatingsScreen(),
+                    ),
+              ),
+            ],
           ),
         ],
       ),

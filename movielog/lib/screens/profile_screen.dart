@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/common_app_bar.dart';
 import '../widgets/edit_profile_button.dart';
 import '../widgets/favorite_genres.dart';
+import '../widgets/my_ratings_entry.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_stats.dart';
 
@@ -22,7 +23,7 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-/// 프로필 화면의 본문. 헤더, 수정 버튼, 통계, 선호 장르를 세로로 배치한다.
+/// 프로필 화면의 본문. 헤더, 수정 버튼, 통계, 내가 등록한 평점 진입 행, 선호 장르를 세로로 배치한다.
 class ProfileBody extends StatelessWidget {
   const ProfileBody({super.key});
 
@@ -40,6 +41,8 @@ class ProfileBody extends StatelessWidget {
           Center(child: EditProfileButton()),
           SizedBox(height: 28),
           ProfileStats(),
+          SizedBox(height: 24),
+          MyRatingsEntry(),
           SizedBox(height: 28),
           FavoriteGenres(),
         ],
