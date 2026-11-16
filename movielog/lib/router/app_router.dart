@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../data/models/tmdb_movie_dto.dart';
+import '../data/services/member_check_service.dart';
 import '../data/services/tmdb_movie_service.dart';
 
 import '../screens/home_screen.dart';
@@ -14,6 +15,7 @@ import '../screens/sign_up_screen.dart';
 import '../screens/start_screen.dart';
 import '../view_models/movie_home_view_model.dart';
 import '../view_models/movie_list_view_model.dart';
+import '../view_models/sign_up_view_model.dart';
 
 /// 앱에서 사용하는 Route를 모아 관리하는 클래스.
 class AppRouter {
@@ -29,8 +31,13 @@ class AppRouter {
       ),
       GoRoute(
         path: '/register',
+        // 회원가입 화면 전용 ViewModel. 화면을 떠나면 중복 확인 상태도 함께 사라진다.
         builder: (BuildContext context, GoRouterState state) =>
-            const SignUpScreen(),
+            ChangeNotifierProvider<SignUpViewModel>(
+              create: (BuildContext context) =>
+                  SignUpViewModel(context.read<MemberCheckService>()),
+              child: const SignUpScreen(),
+            ),
       ),
       // 상세 화면은 NavigationBar 없이 전체 화면으로 보여주므로 ShellRoute 밖에 둔다.
       GoRoute(
