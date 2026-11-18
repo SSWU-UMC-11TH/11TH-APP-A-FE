@@ -4,24 +4,29 @@ import 'package:provider/provider.dart';
 
 import '../core/network/movie_log_client.dart';
 import '../core/network/tmdb_client.dart';
-import '../data/services/member_check_service.dart';
 import '../data/services/rating_api_service.dart';
+import '../data/services/sign_up_service.dart';
 import '../data/services/tmdb_movie_service.dart';
 import '../router/app_router.dart';
 import '../theme/app_theme.dart';
+import '../view_models/learning_member_session.dart';
 
 class MovieLogApp extends StatelessWidget {
   const MovieLogApp({
     super.key,
     this.movieService,
-    this.memberCheckService,
+    this.signUpService,
     this.ratingApiService,
+    this.initialMemberId,
   });
 
   /// 테스트에서 fixture를 돌려주는 Service로 바꿔 끼울 때 사용한다.
   final TmdbMovieService? movieService;
-  final MemberCheckService? memberCheckService;
+  final SignUpService? signUpService;
   final RatingApiService? ratingApiService;
+
+  /// 테스트에서 회원가입을 거치지 않고 학습용 회원을 미리 정할 때 사용한다.
+  final int? initialMemberId;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +41,12 @@ class MovieLogApp extends StatelessWidget {
         Provider<TmdbMovieService>(
           create: (_) => movieService ?? TmdbMovieService(createTmdbClient()),
         ),
-        Provider<MemberCheckService>(
-          create: (_) =>
-              memberCheckService ?? MemberCheckService(sharedMovieLogClient()),
+        // 회원가입 결과의 memberId를 영화 상세·마이페이지 Route가 함께 읽는다.
+        ChangeNotifierProvider<LearningMemberSession>(
+          create: (_) => LearningMemberSession(memberId: initialMemberId),
+        ),
+        Provider<SignUpService>(
+          create: (_) => signUpService ?? SignUpService(sharedMovieLogClient()),
         ),
         Provider<RatingApiService>(
           create: (_) =>
