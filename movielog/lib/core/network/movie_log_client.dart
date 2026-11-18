@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
 
-/// 워크북 자체 백엔드(`/v5`) 전용 Dio Client.
+/// 워크북 자체 백엔드(`/v6`) 전용 Dio Client.
 ///
 /// TMDB Client와 baseUrl·인증 Header가 다르므로 절대 하나로 합치지 않는다.
-/// MemberCheckService와 RatingApiService가 이 Client 하나를 함께 쓴다.
+/// SignUpService와 RatingApiService가 이 Client 하나를 함께 쓴다.
+/// TMDB Token을 이 Client에 넣지 않는다.
 Dio createMovieLogClient() {
   return Dio(
     BaseOptions(
