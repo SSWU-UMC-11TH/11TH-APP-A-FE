@@ -119,6 +119,9 @@ class MyRatingsScreen extends StatelessWidget {
 /// 취소하거나 실패해도 따로 복구할 상태가 없다.
 Future<void> onEditPressed(BuildContext context, RatingDto rating) async {
   final MyRatingsViewModel viewModel = context.read<MyRatingsViewModel>();
+  // 저장 뒤 재조회가 Loading으로 목록을 다시 그리면 카드의 context가 사라진다.
+  // 그래도 Snackbar를 띄울 수 있게 ScaffoldMessenger를 Dialog 전에 잡아 둔다.
+  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
   final bool? saved = await showDialog<bool>(
     context: context,
     barrierDismissible: false, // 저장 중 바깥 탭으로 닫히는 것도 막는다.
@@ -134,14 +137,15 @@ Future<void> onEditPressed(BuildContext context, RatingDto rating) async {
     ),
   );
 
-  if (!context.mounted || saved != true) return;
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('평점을 수정했습니다.')));
+  if (saved != true || !messenger.mounted) return;
+  messenger.showSnackBar(const SnackBar(content: Text('평점을 수정했습니다.')));
 }
 
 /// 삭제 버튼: 확인 Dialog를 열고, 삭제가 끝날 때까지 Dialog를 유지한다.
 Future<void> onDeletePressed(BuildContext context, RatingDto rating) async {
   final MyRatingsViewModel viewModel = context.read<MyRatingsViewModel>();
+  // 삭제 뒤 재조회로 카드가 사라져도 Snackbar를 띄울 수 있게 미리 잡아 둔다.
+  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
   final bool? deleted = await showDialog<bool>(
     context: context,
     barrierDismissible: false, // 삭제 중 바깥 탭으로 닫히는 것도 막는다.
@@ -151,9 +155,8 @@ Future<void> onDeletePressed(BuildContext context, RatingDto rating) async {
   );
 
   // deleted는 실제로 삭제까지 마쳤을 때만 true다.
-  if (!context.mounted || deleted != true) return;
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('평점을 삭제했습니다.')));
+  if (deleted != true || !messenger.mounted) return;
+  messenger.showSnackBar(const SnackBar(content: Text('평점을 삭제했습니다.')));
 }
 
 /// 선택 삭제 (Challenge): 확인 Dialog는 삭제 여부만 묻고 요청 전에 바로 닫힌다.

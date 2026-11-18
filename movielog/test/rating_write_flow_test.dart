@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -206,6 +208,37 @@ void main() {
       expect(ratingService.calls, [101, 101]);
       expect(find.text('세 번째 봐도 좋다'), findsOneWidget);
       expect(find.text('별점 5 / 5'), findsOneWidget);
+      await flushSnackBar(tester);
+    });
+
+    testWidgets('재조회가 늦어 목록이 Loading으로 바뀌어도 수정·삭제 성공 Snackbar가 뜬다', (
+      tester,
+    ) async {
+      await pumpAt(tester, '/my/ratings');
+
+      // 실제 서버처럼 저장 뒤 GET이 늦게 끝나면 카드가 잠시 사라진다.
+      ratingService.gate = Completer<void>();
+      await tester.tap(find.byTooltip('수정').first);
+      await tester.pumpAndSettle();
+      await tapStar(tester, 5);
+      await tester.tap(dialogConfirm);
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(RatingCard), findsNothing);
+      ratingService.gate!.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('평점을 수정했습니다.'), findsOneWidget);
+      await flushSnackBar(tester);
+
+      ratingService.gate = Completer<void>();
+      await tester.tap(find.byTooltip('삭제').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(MovieLogButton, '삭제'));
+      await tester.pump();
+      await tester.pump();
+      ratingService.gate!.complete();
+      await tester.pumpAndSettle();
+      expect(find.text('평점을 삭제했습니다.'), findsOneWidget);
       await flushSnackBar(tester);
     });
 
