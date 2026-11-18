@@ -11,7 +11,7 @@ void main() {
   late FakeTmdbMovieService movieService;
 
   MyRatingsViewModel createViewModel() =>
-      MyRatingsViewModel(ratingService, movieService, sampleMemberId);
+      MyRatingsViewModel(ratingService, movieService, 1);
 
   setUp(() {
     ratingService = FakeRatingApiService();

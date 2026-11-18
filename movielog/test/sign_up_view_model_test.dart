@@ -6,11 +6,11 @@ import 'package:movielog/view_models/sign_up_view_model.dart';
 import 'support/fake_movie_log_services.dart';
 
 void main() {
-  late FakeMemberCheckService service;
+  late FakeSignUpService service;
   late SignUpViewModel viewModel;
 
   setUp(() {
-    service = FakeMemberCheckService();
+    service = FakeSignUpService();
     viewModel = SignUpViewModel(service);
   });
 

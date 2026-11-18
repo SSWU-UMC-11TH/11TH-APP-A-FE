@@ -24,11 +24,15 @@ late FakeTmdbMovieService service;
 late FakeRatingApiService ratingService;
 
 /// GoRouter는 앱 전체에서 하나만 사용하므로 테스트마다 시작 위치로 되돌린다.
-Future<void> pumpAppAtStart(WidgetTester tester) async {
+Future<void> pumpAppAtStart(
+  WidgetTester tester, {
+  int? initialMemberId = 1,
+}) async {
   await tester.pumpWidget(
     MovieLogApp(
       movieService: service,
-      memberCheckService: FakeMemberCheckService(),
+      signUpService: FakeSignUpService(),
+      initialMemberId: initialMemberId,
       ratingApiService: ratingService,
     ),
   );
@@ -43,7 +47,7 @@ Future<void> goToHome(WidgetTester tester) async {
   // 2주차부터 회원가입은 유효한 입력과 약관 동의가 있어야 진행된다.
   await tester.enterText(find.byType(TextFormField).at(0), '무비러버');
   await tester.enterText(find.byType(TextFormField).at(1), 'movie@example.com');
-  await tester.enterText(find.byType(TextFormField).at(2), 'password123');
+  await tester.enterText(find.byType(TextFormField).at(2), 'Password123!');
   await tester.pumpAndSettle();
   // 6주차부터 닉네임·이메일 중복 확인을 마쳐야 가입할 수 있다.
   await tester.tap(find.byType(MovieLogButton).at(0));
@@ -58,6 +62,9 @@ Future<void> goToHome(WidgetTester tester) async {
   await tester.pumpAndSettle();
   // 가입 완료 Snackbar 닫힘 Timer가 테스트 종료 후 남지 않도록 시간을 흘려 닫는다.
   await tester.pump(const Duration(seconds: 5));
+  await tester.pumpAndSettle();
+  // 7주차부터 가입 성공 후 영화 목록(/movies)으로 이동하므로 홈 탭으로 옮긴다.
+  await tester.tap(find.byIcon(Icons.home_outlined).last);
   await tester.pumpAndSettle();
 }
 
@@ -217,14 +224,23 @@ void main() {
     expect(find.widgetWithText(ElevatedButton, '확인'), findsOneWidget);
   });
 
-  testWidgets('URL로 직접 들어와 영화 정보가 없으면 찾을 수 없다고 안내한다', (
+  testWidgets('URL로 직접 들어오면 TMDB로 다시 조회하고, 없는 영화는 찾을 수 없다고 안내한다', (
     WidgetTester tester,
   ) async {
     await pumpAppAtStart(tester);
+    AppRouter.router.go('/movies/680');
+    await tester.pumpAndSettle();
+    expect(service.detailCalls, contains(680));
+    // 상세 이미지 아래 제목은 테스트 화면(800x600)에서 화면 밖에 있다.
+    expect(find.text('펄프 픽션', skipOffstage: false), findsOneWidget);
+
     AppRouter.router.go('/movies/1');
     await tester.pumpAndSettle();
-
     expect(find.text('찾을 수 없는 영화예요'), findsOneWidget);
+
+    AppRouter.router.go('/movies/abc');
+    await tester.pumpAndSettle();
+    expect(find.text('영화 ID가 올바르지 않습니다.'), findsOneWidget);
   });
 
   testWidgets('즐겨찾기를 누르면 Snackbar로 결과를 안내한다', (WidgetTester tester) async {
@@ -281,7 +297,7 @@ void main() {
     expect(find.byType(MyRatingsScreen), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
     expect(ratingService.calls, [1]);
-    expect(find.text('학습용 회원(memberId 1)의 공개 평점입니다.'), findsOneWidget);
+    expect(find.text('학습용 회원(memberId 1)의 평점입니다.'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
@@ -329,7 +345,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('존재하지 않는 회원입니다.'), findsOneWidget);
     final Finder retry = find.widgetWithText(MovieLogButton, '다시 시도');
-    expect(tester.getSize(retry).width, 120);
+    expect(tester.getSize(retry).width, 140);
 
     ratingService.failStatus = null;
     ratingService.ratings = [fixtureRating(1, movieId: 680)];

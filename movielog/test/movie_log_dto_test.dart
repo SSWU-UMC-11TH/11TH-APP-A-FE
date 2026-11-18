@@ -41,7 +41,7 @@ void main() {
   });
 
   test('평점 조회 실패는 400·404·그 밖의 실패를 다른 문구로 구분한다', () {
-    const path = '/v5/members/1/ratings';
+    const path = '/v6/members/1/ratings';
     expect(
       writeMyRatingsErrorMessage(fakeDioError(path, statusCode: 400)),
       'memberId 형식을 다시 확인해 주세요.',
