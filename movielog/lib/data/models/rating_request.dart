@@ -11,7 +11,7 @@ int validateServerScore(double value) {
 /// 코멘트 최대 길이. 서버 CreateRatingDto·UpdateRatingDto의 maxLength와 같다.
 const int maxCommentLength = 500;
 
-/// 평점 등록 요청 body (`POST /v6/members/{memberId}/ratings`, CreateRatingDto).
+/// 평점 등록 요청 body (`POST /v7/ratings`, CreateRatingDto). memberId는 body에 넣지 않는다.
 ///
 /// [movieId]는 영화 배열 index가 아니라 TMDB 영화 id(`TmdbMovieDto.id`)다.
 class CreateRatingRequest {

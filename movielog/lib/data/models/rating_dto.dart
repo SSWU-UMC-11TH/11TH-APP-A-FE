@@ -18,7 +18,7 @@ class RatingDto {
   final String? comment;
   final DateTime createdAt;
 
-  /// v6 응답부터 포함된다. v5 응답이나 fixture에는 없을 수 있다.
+  /// v6 응답부터 포함되고 v7에서는 필수다. v5 응답이나 fixture에는 없을 수 있다.
   final DateTime? updatedAt;
 
   factory RatingDto.fromJson(Map<String, dynamic> json) {
