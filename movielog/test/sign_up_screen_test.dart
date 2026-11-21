@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:movielog/app/movie_log_app.dart';
-import 'package:movielog/router/app_router.dart';
+import 'package:movielog/screens/login_screen.dart';
 import 'package:movielog/screens/sign_up_screen.dart';
 import 'package:movielog/view_models/sign_up_view_model.dart';
 import 'package:movielog/widgets/movielog_button.dart';
@@ -15,16 +14,14 @@ import 'support/fake_tmdb_movie_service.dart';
 
 late FakeSignUpService checkService;
 
-/// 앱을 띄우고 회원가입 화면으로 이동한다.
+/// 로그아웃 상태로 앱을 띄우고 회원가입 화면(공개 Route)으로 이동한다.
 Future<void> pumpSignUp(WidgetTester tester) async {
-  await tester.pumpWidget(
-    MovieLogApp(
-      movieService: FakeTmdbMovieService(),
-      signUpService: checkService,
-    ),
+  await pumpMovieLogApp(
+    tester,
+    FakeMovieLogBackend(initialToken: null, signUpService: checkService),
+    FakeTmdbMovieService(),
+    location: '/register',
   );
-  AppRouter.router.go('/register');
-  await tester.pumpAndSettle();
 }
 
 final Finder nicknameField = find.byType(TextFormField).at(0);
@@ -230,7 +227,7 @@ void main() {
     expect(isSubmitEnabled(tester), isFalse);
   });
 
-  testWidgets('가입하기를 누르면 v6 POST 후 memberId Snackbar와 함께 영화 목록으로 이동한다', (
+  testWidgets('가입하기를 누르면 v7 POST 후 완료 Snackbar와 함께 로그인 화면으로 이동한다', (
     WidgetTester tester,
   ) async {
     await pumpSignUp(tester);
@@ -246,8 +243,9 @@ void main() {
       'password': 'Password123!',
       'nickname': '무비러버',
     });
-    expect(find.text('무비러버님, 가입이 완료되었습니다. (memberId 101)'), findsOneWidget);
-    expect(AppRouter.router.state.uri.path, '/movies');
+    // 가입은 로그인이 아니므로 토큰 없이 로그인 화면으로 간다.
+    expect(find.text('무비러버님, 가입이 완료되었습니다. 로그인해 주세요.'), findsOneWidget);
+    expect(routerOf(tester).state.uri.path, '/login');
     expect(find.byType(SignUpScreen), findsNothing);
 
     // Snackbar 닫힘 Timer가 테스트 종료 후 남지 않도록 시간을 흘려 닫는다.
@@ -288,7 +286,7 @@ void main() {
     await tester.pump();
 
     expect(tester.widget<MovieLogButton>(submit).isLoading, isTrue);
-    // 제출 중에는 시작 화면으로 돌아가지 않는다.
+    // 제출 중에는 로그인 화면으로 돌아가지 않는다.
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pump();
     expect(find.byType(SignUpScreen), findsOneWidget);
@@ -331,12 +329,12 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('뒤로가기를 누르면 시작 화면으로 돌아간다', (WidgetTester tester) async {
+  testWidgets('뒤로가기를 누르면 로그인 화면으로 돌아간다', (WidgetTester tester) async {
     await pumpSignUp(tester);
 
     await tester.tap(find.byIcon(Icons.arrow_back));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(ElevatedButton, '시작하기'), findsOneWidget);
+    expect(find.byType(LoginScreen), findsOneWidget);
   });
 }
