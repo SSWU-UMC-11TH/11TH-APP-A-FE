@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 
 import '../data/models/create_member_request.dart';
 import '../theme/app_colors.dart';
-import '../view_models/learning_member_session.dart';
 import '../view_models/sign_up_view_model.dart';
 import '../widgets/common_app_bar.dart';
 import '../widgets/field_label.dart';
@@ -22,8 +21,9 @@ import '../widgets/terms_checkbox.dart';
 /// 서버 중복 여부는 [SignUpViewModel]의 상태를 errorText로 연결한다.
 /// 형식 검사(validator)는 화면이, 중복 여부는 ViewModel이 담당한다.
 ///
-/// 7주차부터 유효한 입력을 v6 회원가입 POST로 전송한다.
-/// 성공하면 result.memberId를 [LearningMemberSession]에 저장하고 /movies로 이동한다.
+/// 7주차부터 유효한 입력을 회원가입 POST로 전송한다(8주차 v7).
+/// 8주차부터 가입은 로그인이 아니므로 토큰이 생기지 않는다.
+/// 성공하면 로그인 화면(/login)으로 돌아가 같은 이메일로 로그인하게 안내한다.
 /// 서버가 비밀번호 형식을 거부하면(400) 비밀번호 칸 errorText로,
 /// 그 외 400·409(최종 중복)·통신 실패는 Snackbar로 안내한다.
 /// 제출 중에는 버튼 중복 탭과 화면 이탈을 막는다.
@@ -126,16 +126,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     // 요청을 기다리는 동안 화면이 사라졌으면 결과를 반영하지 않는다.
     if (!mounted) return;
 
-    final int? memberId = viewModel.createdMemberId;
-    if (viewModel.submitStatus == SubmitStatus.success && memberId != null) {
-      context.read<LearningMemberSession>().setMemberId(memberId);
+    if (viewModel.submitStatus == SubmitStatus.success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$nickname님, 가입이 완료되었습니다. (memberId $memberId)'),
-        ),
+        SnackBar(content: Text('$nickname님, 가입이 완료되었습니다. 로그인해 주세요.')),
       );
-      // 가입 이후에는 돌아올 필요가 없으므로 push 대신 go로 이동한다.
-      context.go('/movies');
+      // 가입 화면으로 돌아올 필요가 없으므로 go로 로그인 화면을 연다.
+      context.go('/login');
       return;
     }
 
@@ -234,9 +230,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         appBar: CommonAppBar(
           title: '회원가입',
           centerTitle: true,
-          // 시작 화면에서 go로 넘어와 Navigator 스택이 없으므로 pop 대신 go를 사용한다.
+          // 로그인 화면에서 push로 열렸으면 pop, URL로 직접 왔으면 로그인 화면으로 간다.
           onBack: () {
-            if (!isSubmitting) context.go('/start');
+            if (isSubmitting) return;
+            context.canPop() ? context.pop() : context.go('/login');
           },
         ),
         body: SafeArea(
