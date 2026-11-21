@@ -9,6 +9,7 @@ class RatingDto {
     required this.score,
     required this.comment,
     required this.createdAt,
+    this.updatedAt,
   });
 
   final int ratingId;
@@ -17,11 +18,18 @@ class RatingDto {
   final String? comment;
   final DateTime createdAt;
 
-  factory RatingDto.fromJson(Map<String, dynamic> json) => RatingDto(
-    ratingId: (json['ratingId'] as num).toInt(),
-    movieId: (json['movieId'] as num).toInt(),
-    score: (json['score'] as num).toInt(),
-    comment: json['comment'] as String?,
-    createdAt: DateTime.parse(json['createdAt'] as String),
-  );
+  /// v6 응답부터 포함된다. v5 응답이나 fixture에는 없을 수 있다.
+  final DateTime? updatedAt;
+
+  factory RatingDto.fromJson(Map<String, dynamic> json) {
+    final updatedAt = json['updatedAt'] as String?;
+    return RatingDto(
+      ratingId: (json['ratingId'] as num).toInt(),
+      movieId: (json['movieId'] as num).toInt(),
+      score: (json['score'] as num).toInt(),
+      comment: json['comment'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: updatedAt == null ? null : DateTime.parse(updatedAt),
+    );
+  }
 }

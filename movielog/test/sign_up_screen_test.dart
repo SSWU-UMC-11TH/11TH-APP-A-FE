@@ -13,14 +13,14 @@ import 'package:movielog/widgets/terms_checkbox.dart';
 import 'support/fake_movie_log_services.dart';
 import 'support/fake_tmdb_movie_service.dart';
 
-late FakeMemberCheckService checkService;
+late FakeSignUpService checkService;
 
 /// 앱을 띄우고 회원가입 화면으로 이동한다.
 Future<void> pumpSignUp(WidgetTester tester) async {
   await tester.pumpWidget(
     MovieLogApp(
       movieService: FakeTmdbMovieService(),
-      memberCheckService: checkService,
+      signUpService: checkService,
     ),
   );
   AppRouter.router.go('/register');
@@ -60,7 +60,7 @@ Future<void> tapSubmit(WidgetTester tester) async {
 Future<void> enterValidInputs(WidgetTester tester) async {
   await tester.enterText(nicknameField, '무비러버');
   await tester.enterText(emailField, 'movie@example.com');
-  await tester.enterText(passwordField, 'password123');
+  await tester.enterText(passwordField, 'Password123!');
   await tester.pumpAndSettle();
   await tester.tap(nicknameCheckButton);
   await tester.tap(emailCheckButton);
@@ -69,7 +69,7 @@ Future<void> enterValidInputs(WidgetTester tester) async {
 
 void main() {
   setUp(() {
-    checkService = FakeMemberCheckService();
+    checkService = FakeSignUpService();
   });
 
   testWidgets('입력 전에는 오류 메시지가 없고 가입 버튼이 비활성화된다', (WidgetTester tester) async {
@@ -212,7 +212,7 @@ void main() {
     await pumpSignUp(tester);
     await tester.enterText(nicknameField, '무비러버');
     await tester.enterText(emailField, 'movie@example.com');
-    await tester.enterText(passwordField, 'password123');
+    await tester.enterText(passwordField, 'Password123!');
     await tester.tap(find.byType(Checkbox));
     await tester.pumpAndSettle();
     // 형식이 모두 맞고 약관에 동의해도 중복 확인 전에는 비활성이다.
@@ -230,7 +230,7 @@ void main() {
     expect(isSubmitEnabled(tester), isFalse);
   });
 
-  testWidgets('가입하기를 누르면 완료 Snackbar와 함께 홈으로 이동한다', (
+  testWidgets('가입하기를 누르면 v6 POST 후 memberId Snackbar와 함께 영화 목록으로 이동한다', (
     WidgetTester tester,
   ) async {
     await pumpSignUp(tester);
@@ -240,11 +240,93 @@ void main() {
 
     await tapSubmit(tester);
 
-    expect(find.text('무비러버님, 가입이 완료되었습니다.'), findsOneWidget);
-    expect(find.text('오늘은 어떤\n영화를 볼까요?'), findsOneWidget);
+    expect(checkService.signUpCalls, hasLength(1));
+    expect(checkService.signUpCalls.single.toJson(), {
+      'email': 'movie@example.com',
+      'password': 'Password123!',
+      'nickname': '무비러버',
+    });
+    expect(find.text('무비러버님, 가입이 완료되었습니다. (memberId 101)'), findsOneWidget);
+    expect(AppRouter.router.state.uri.path, '/movies');
     expect(find.byType(SignUpScreen), findsNothing);
 
     // Snackbar 닫힘 Timer가 테스트 종료 후 남지 않도록 시간을 흘려 닫는다.
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('비밀번호는 대·소문자·숫자·특수문자를 모두 포함해야 한다', (WidgetTester tester) async {
+    await pumpSignUp(tester);
+    await tester.enterText(passwordField, 'password123');
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('소문자·대문자·숫자·특수문자(!@#\$%^&*)를 모두 포함해야 합니다.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('제출 중에는 가입하기가 로딩으로 바뀌고, 서버 비밀번호 400은 비밀번호 칸 errorText가 된다', (
+    WidgetTester tester,
+  ) async {
+    checkService.signUpGate = Completer<void>();
+    checkService.signUpFailure = (
+      status: 400,
+      code: 'COMMON400',
+      message: '비밀번호는 대문자/소문자/숫자/특수문자를 포함한 8자 이상이어야 합니다.',
+    );
+    await pumpSignUp(tester);
+    await enterValidInputs(tester);
+    await tester.tap(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    // 로딩 중에는 label 대신 인디케이터만 그리므로 순서로 찾는다.
+    final Finder submit = find.byType(MovieLogButton).at(2);
+    await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    await tester.tap(submit);
+    await tester.pump();
+
+    expect(tester.widget<MovieLogButton>(submit).isLoading, isTrue);
+    // 제출 중에는 시작 화면으로 돌아가지 않는다.
+    await tester.tap(find.byIcon(Icons.arrow_back));
+    await tester.pump();
+    expect(find.byType(SignUpScreen), findsOneWidget);
+
+    checkService.signUpGate!.complete();
+    await tester.pumpAndSettle();
+
+    expect(
+      errorTextOf(tester, passwordField),
+      '비밀번호는 대문자/소문자/숫자/특수문자를 포함한 8자 이상이어야 합니다.',
+    );
+    expect(find.byType(SnackBar), findsNothing);
+
+    // 비밀번호를 고치면 서버 오류가 사라진다.
+    await tester.enterText(passwordField, 'Password123!!');
+    await tester.pumpAndSettle();
+    expect(errorTextOf(tester, passwordField), isNull);
+  });
+
+  testWidgets('최종 가입 409는 Snackbar로 알리고 가입 버튼을 다시 잠근다', (
+    WidgetTester tester,
+  ) async {
+    checkService.signUpFailure = (
+      status: 409,
+      code: 'COMMON409',
+      message: '이미 사용 중인 닉네임입니다.',
+    );
+    await pumpSignUp(tester);
+    await enterValidInputs(tester);
+    await tester.tap(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    await tapSubmit(tester);
+
+    expect(find.widgetWithText(SnackBar, '이미 사용 중인 닉네임입니다.'), findsOneWidget);
+    expect(errorTextOf(tester, nicknameField), '이미 사용 중인 닉네임입니다.');
+    expect(isSubmitEnabled(tester), isFalse);
+    expect(find.byType(SignUpScreen), findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
   });
