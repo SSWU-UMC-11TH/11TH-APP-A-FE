@@ -16,8 +16,8 @@ import '../widgets/tmdb_poster_image.dart';
 /// 보여줄 영화와 평점 등록 상태는 [MovieDetailViewModel]이 갖는다.
 /// 영화는 [MovieDetailLoader]가 extra 또는 TMDB 재조회로 준비해 둔다.
 ///
-/// 7주차부터 평점 Dialog의 별점·코멘트를 MovieLog v6 POST로 저장한다.
-/// 이 화면은 등록만 하고, 조회·수정·삭제는 마이페이지 "내가 등록한 평점"에서 한다.
+/// 8주차부터 평점 Dialog의 별점·코멘트를 MovieLog v7 POST(토큰 기반)로 저장한다.
+/// 이 화면은 등록만 하고, 수정·삭제는 마이페이지 "내가 등록한 평점"에서 한다.
 class MovieDetailScreen extends StatefulWidget {
   const MovieDetailScreen({super.key});
 
@@ -177,8 +177,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       bottomNavigationBar: _MovieDetailActionBar(
         isFavorite: _isFavorite,
         onFavoriteTap: () => _toggleFavorite(movie),
-        // 학습용 회원가입 전에는 평점 등록 버튼을 잠그고 가입으로 안내한다.
-        onRatingTap: viewModel.canRate ? _openRatingDialog : null,
+        // 보호 Route라 이 화면에 왔다면 이미 로그인 상태다.
+        onRatingTap: _openRatingDialog,
       ),
     );
   }
@@ -195,88 +195,53 @@ class _MovieDetailActionBar extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onFavoriteTap;
 
-  /// null이면 학습용 회원가입 전이므로 버튼을 비활성화하고 안내 문구를 보여준다.
-  final VoidCallback? onRatingTap;
+  final VoidCallback onRatingTap;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: <Widget>[
-            if (onRatingTap == null) const _SignUpRequiredNotice(),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onFavoriteTap,
-                    icon: Icon(
-                      isFavorite ? Icons.bookmark : Icons.bookmark_border,
-                      size: 20,
-                    ),
-                    label: Text(isFavorite ? '즐겨찾기 완료' : '즐겨찾기'),
-                    style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onFavoriteTap,
+                icon: Icon(
+                  isFavorite ? Icons.bookmark : Icons.bookmark_border,
+                  size: 20,
+                ),
+                label: Text(isFavorite ? '즐겨찾기 완료' : '즐겨찾기'),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: onRatingTap,
-                    icon: const Icon(Icons.rate_review_outlined, size: 20),
-                    label: const Text('평점 남기기'),
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: onRatingTap,
+                icon: const Icon(Icons.rate_review_outlined, size: 20),
+                label: const Text('평점 남기기'),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ],
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// 학습용 회원가입 전에 평점 버튼 위에 보여주는 안내.
-class _SignUpRequiredNotice extends StatelessWidget {
-  const _SignUpRequiredNotice();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: <Widget>[
-          const Icon(Icons.info_outline, size: 16, color: AppColors.primary),
-          const SizedBox(width: 6),
-          const Expanded(
-            child: Text(
-              '평점을 남기려면 학습용 회원가입이 필요해요.',
-              style: TextStyle(fontSize: 13, color: AppColors.body),
-            ),
-          ),
-          TextButton(
-            onPressed: () => context.go('/register'),
-            child: const Text('회원가입'),
-          ),
-        ],
       ),
     );
   }

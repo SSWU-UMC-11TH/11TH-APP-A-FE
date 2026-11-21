@@ -13,15 +13,20 @@ import '../widgets/movielog_button.dart';
 import '../widgets/rating_card.dart';
 import '../widgets/rating_dialog.dart';
 
-/// 마이페이지의 자식 화면 "내가 등록한 평점" (W6-02, W7-01).
+/// 마이페이지의 자식 화면 "내가 등록한 평점" (W6-02, W7-01, W8).
 ///
 /// 직접 API를 부르지 않고 [MyRatingsViewModel]의 상태를 그대로 그린다.
 /// root Navigator 위에 열리므로 하단 NavigationBar가 없다.
-/// 조회 대상은 회원가입 결과를 보관한 학습용 회원(LearningMemberSession)이다.
 ///
+/// 8주차: v7에는 토큰 기반 내 평점 목록 GET이 없으므로, 이번 로그인 세션에서
+/// 등록한 평점(등록 response의 Rating)만 보여주고 v7 PATCH/DELETE로 수정·삭제한다.
 /// 7주차부터 카드별 수정·삭제를, Challenge로 상단 "편집"의 다중 선택 삭제를 지원한다.
 class MyRatingsScreen extends StatelessWidget {
   const MyRatingsScreen({super.key});
+
+  /// 재시작 뒤 기존 내 평점 전체 복원은 v7 계약상 지원하지 않는다는 안내.
+  static const String sessionNotice =
+      '이번 로그인 세션에서 등록한 평점만 표시돼요. 앱을 다시 시작하면 목록이 비어요.';
 
   @override
   Widget build(BuildContext context) {
@@ -77,14 +82,6 @@ class MyRatingsScreen extends StatelessWidget {
             child: switch (viewModel.status) {
               MyRatingsLoadStatus.idle ||
               MyRatingsLoadStatus.loading => const _MyRatingsLoading(),
-              MyRatingsLoadStatus.error => _MyRatingsError(
-                // 저장은 됐지만 재조회만 실패했으면 그 사실을 먼저 알린다.
-                message: viewModel.refreshWarning ?? viewModel.message,
-                retryLabel: viewModel.refreshWarning != null
-                    ? '조회 다시 시도'
-                    : '다시 시도',
-                onRetry: viewModel.load,
-              ),
               MyRatingsLoadStatus.empty => const _MyRatingsEmpty(),
               MyRatingsLoadStatus.success => _MyRatingsList(
                 viewModel: viewModel,
@@ -212,8 +209,8 @@ class _MyRatingsList extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                '학습용 회원(memberId ${viewModel.memberId})의 평점입니다.',
+              const Text(
+                MyRatingsScreen.sessionNotice,
                 style: AppTextStyles.bodySmall,
               ),
               if (notice != null) ...<Widget>[
@@ -232,8 +229,8 @@ class _MyRatingsList extends StatelessWidget {
             onSelectedChanged: () => viewModel.toggleSelected(ratingId),
           );
         }
-        // 이 목록은 memberId path로 조회한 본인 평점만 담으므로 모두 수정·삭제할 수 있다.
-        // 다른 회원의 평점을 함께 보여주게 되면 그 카드에는 콜백을 넘기지 않는다.
+        // 이 목록은 현재 세션에서 내가 등록한 평점만 담으므로 모두 수정·삭제할 수 있다.
+        // 그래도 서버가 RATING403_1로 거부하면 안내만 하고 로그아웃하지 않는다.
         return RatingCard(
           entry: entry,
           onEdit: () => onEditPressed(context, entry.rating),
@@ -304,97 +301,19 @@ class _MyRatingsEmpty extends StatelessWidget {
         children: <Widget>[
           Icon(Icons.star_outline, size: 48, color: AppColors.label),
           SizedBox(height: 12),
-          Text('아직 등록한 평점이 없어요', style: AppTextStyles.titleMedium),
+          Text('이번 세션에 등록한 평점이 없어요', style: AppTextStyles.titleMedium),
           SizedBox(height: 4),
           Text('영화 상세에서 평점을 남겨 보세요', style: AppTextStyles.bodyMedium),
-        ],
-      ),
-    );
-  }
-}
-
-class _MyRatingsError extends StatelessWidget {
-  const _MyRatingsError({
-    this.message,
-    required this.retryLabel,
-    required this.onRetry,
-  });
-
-  final String? message;
-  final String retryLabel;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-            const SizedBox(height: 12),
-            Text(
-              message ?? '평점을 불러오지 못했습니다.',
+          SizedBox(height: 12),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              MyRatingsScreen.sessionNotice,
               textAlign: TextAlign.center,
-              style: AppTextStyles.titleMedium,
+              style: AppTextStyles.bodySmall,
             ),
-            const SizedBox(height: 20),
-            // 아이콘처럼 정해진 크기가 필요한 자리라 고정 너비를 쓴다.
-            MovieLogButton(label: retryLabel, width: 140, onPressed: onRetry),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 학습용 회원가입 전에 /my/ratings로 들어왔을 때 보여주는 화면.
-///
-/// 6주차처럼 memberId 1을 대신 쓰면 다른 회원의 path로 요청하게 되므로 막는다.
-class MyRatingsSignUpRequired extends StatelessWidget {
-  const MyRatingsSignUpRequired({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CommonAppBar(
-        title: '내가 등록한 평점',
-        centerTitle: true,
-        onBack: () => context.canPop() ? context.pop() : context.go('/my'),
-      ),
-      body: const _SignUpRequiredBody(),
-    );
-  }
-}
-
-class _SignUpRequiredBody extends StatelessWidget {
-  const _SignUpRequiredBody();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Icon(Icons.person_outline, size: 48, color: AppColors.label),
-            const SizedBox(height: 12),
-            const Text('학습용 회원가입이 필요합니다.', style: AppTextStyles.titleMedium),
-            const SizedBox(height: 4),
-            const Text(
-              '가입한 회원의 memberId로 평점을 조회합니다.',
-              style: AppTextStyles.bodyMedium,
-            ),
-            const SizedBox(height: 20),
-            MovieLogButton(
-              label: '회원가입',
-              width: 140,
-              onPressed: () => context.go('/register'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

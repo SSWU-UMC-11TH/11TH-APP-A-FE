@@ -1,29 +1,43 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import '../core/network/api_error.dart';
+import '../data/models/rating_dto.dart';
 import '../data/models/rating_with_movie.dart';
 import '../data/models/tmdb_movie_dto.dart';
 import '../data/services/rating_api_service.dart';
 import '../data/services/tmdb_movie_service.dart';
+import 'auth_view_model.dart';
+import 'session_ratings_store.dart';
 
 export '../data/services/rating_api_service.dart' show RatingWriteException;
 
-enum MyRatingsLoadStatus { idle, loading, success, empty, error }
+enum MyRatingsLoadStatus { idle, loading, success, empty }
 
-/// 내가 등록한 평점 화면의 상태 (조회·수정·삭제).
+/// "이번 세션에 등록한 평점" 화면의 상태 (조회·수정·삭제).
 ///
-/// 자체 백엔드에서 평점 목록을 받고, 각 movieId로 TMDB 영화 정보를 붙여
-/// [RatingWithMovie] 목록을 만든다.
-/// [memberId]는 회원가입 결과를 보관한 LearningMemberSession에서 전달받는다.
+/// v7에는 토큰 기반 내 평점 목록 GET이 없으므로 서버 목록을 조회하지 않는다.
+/// 영화 상세에서 등록한 response의 Rating을 [SessionRatingsStore]에서 꺼내
+/// 각 movieId로 TMDB 영화 정보를 붙인다.
 ///
-/// 쓰기(수정·삭제) 성공과 그 뒤 목록 재조회(GET) 성공은 서로 다른 상태다.
-/// 쓰기가 성공했으면 GET이 실패해도 쓰기 실패로 되돌리지 않고 [refreshWarning]만 남긴다.
+/// 수정·삭제는 v7 보호 API로 보내고, 수정 response의 Rating으로 카드를 바로 교체한다.
+/// - AUTH401_2/3/4: 세션 정리 → Router가 /login으로 이동
+/// - RATING403_1: 안내만 하고 로그아웃하지 않는다
+/// - RATING404_1: 이미 없는 평점이므로 목록에서 빼고 새로 그린다
 class MyRatingsViewModel extends ChangeNotifier {
-  MyRatingsViewModel(this._service, this._movieService, this.memberId);
+  MyRatingsViewModel(
+    this._service,
+    this._movieService,
+    this._store,
+    this._auth,
+  ) {
+    _store.addListener(_onStoreChanged);
+  }
 
   final RatingApiService _service;
   final TmdbMovieService _movieService;
-  final int memberId;
+  final SessionRatingsStore _store;
+  final AuthViewModel _auth;
 
   /// 같은 movieId는 한 번만 조회한다. TMDB에 없는 영화(404)는 null로 캐시한다.
   final Map<int, TmdbMovieDto?> _movieCache = {};
@@ -35,186 +49,193 @@ class MyRatingsViewModel extends ChangeNotifier {
   List<RatingWithMovie> ratings = const [];
   MyRatingsLoadStatus status = MyRatingsLoadStatus.idle;
 
-  /// Error 상태에서는 실패 안내, Success 상태에서는 일부 영화 정보 누락 안내.
+  /// 일부 영화 정보 누락 안내.
   String? message;
-
-  /// 저장(수정·삭제)은 완료됐지만 재조회 GET만 실패했을 때의 안내.
-  /// 다음 조회가 성공하면 사라진다.
-  String? refreshWarning;
-
-  static const String refreshFailedText =
-      '저장은 완료됐지만 목록을 불러오지 못했습니다. 조회만 다시 시도해 주세요.';
 
   // ---- Challenge: 다중 선택 삭제 ----
 
-  /// 편집(다중 선택) 모드 여부. 켜지면 카드의 수정·삭제 버튼 대신 CheckBox를 보여준다.
   bool isSelecting = false;
 
   /// 선택한 ratingId. 삭제에 실패한 항목은 선택 상태로 남겨 다시 시도할 수 있게 한다.
   final Set<int> selectedRatingIds = {};
 
-  /// 여러 건을 순서대로 지우는 동안 true. 화면은 로딩 오버레이와 이탈 방지를 건다.
   bool isDeletingSelected = false;
 
-  Future<void> load() async {
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  /// 다른 화면(영화 상세)에서 등록하거나 세션이 바뀌면 목록을 다시 만든다.
+  void _onStoreChanged() {
+    if (status != MyRatingsLoadStatus.idle) load(showLoading: false);
+  }
+
+  Future<void> load({bool showLoading = true}) async {
     final version = ++_requestVersion;
-    status = MyRatingsLoadStatus.loading;
-    message = null;
-    notifyListeners();
+    if (showLoading) {
+      status = MyRatingsLoadStatus.loading;
+      message = null;
+      _notify();
+    }
 
-    try {
-      final rawRatings = await _service.fetchMyRatings(memberId);
+    final List<RatingDto> rawRatings = _store.ratings;
+    final entries = <RatingWithMovie>[];
+    var missingMovies = 0;
+    // 영화 조회 실패가 평점 목록을 지우지 않도록 영화 한 편씩 따로 처리한다.
+    for (final rating in rawRatings) {
       if (_disposed || version != _requestVersion) return;
-
-      final entries = <RatingWithMovie>[];
-      var missingMovies = 0;
-      // 영화 조회 실패가 평점 목록을 지우지 않도록 영화 한 편씩 따로 처리한다.
-      for (final rating in rawRatings) {
-        if (_disposed || version != _requestVersion) return;
-        if (!_movieCache.containsKey(rating.movieId)) {
-          try {
-            _movieCache[rating.movieId] = await _movieService.findMovieById(
-              rating.movieId,
-            );
-          } on DioException {
-            // 일시적 네트워크 실패는 캐시하지 않고 다음 로딩에서 다시 시도한다.
-          }
+      if (!_movieCache.containsKey(rating.movieId)) {
+        try {
+          _movieCache[rating.movieId] = await _movieService.findMovieById(
+            rating.movieId,
+          );
+        } on DioException {
+          // 일시적 네트워크 실패는 캐시하지 않고 다음 로딩에서 다시 시도한다.
         }
-        final movie = _movieCache[rating.movieId];
-        if (movie == null) missingMovies++;
-        entries.add(RatingWithMovie(rating: rating, movie: movie));
       }
-
-      if (_disposed || version != _requestVersion) return;
-      ratings = entries;
-      refreshWarning = null;
-      // 서버에서 사라진 평점은 선택 목록에서도 뺀다.
-      selectedRatingIds.retainAll(
-        entries.map((entry) => entry.rating.ratingId),
-      );
-      // 빈 배열은 실패가 아니라 Empty 상태다.
-      status = entries.isEmpty
-          ? MyRatingsLoadStatus.empty
-          : MyRatingsLoadStatus.success;
-      if (missingMovies > 0) {
-        message = '일부 영화 정보를 가져오지 못해 제목·포스터를 대신 표시합니다.';
-      }
-    } on DioException catch (error) {
-      if (_disposed || version != _requestVersion) return;
-      status = MyRatingsLoadStatus.error;
-      message = writeMyRatingsErrorMessage(error);
+      final movie = _movieCache[rating.movieId];
+      if (movie == null) missingMovies++;
+      entries.add(RatingWithMovie(rating: rating, movie: movie));
     }
 
-    if (!_disposed && version == _requestVersion) notifyListeners();
+    if (_disposed || version != _requestVersion) return;
+    ratings = entries;
+    selectedRatingIds.retainAll(entries.map((entry) => entry.rating.ratingId));
+    if (entries.isEmpty) isSelecting = false;
+    status = entries.isEmpty
+        ? MyRatingsLoadStatus.empty
+        : MyRatingsLoadStatus.success;
+    message = missingMovies > 0 ? '일부 영화 정보를 가져오지 못해 제목·포스터를 대신 표시합니다.' : null;
+    _notify();
   }
 
-  /// 쓰기가 성공한 뒤 목록을 서버 상태와 맞춘다. GET 실패는 다시 던지지 않는다.
-  Future<void> _refreshAfterWrite() async {
-    await load(); // load()는 GET 실패를 status=error로 기록한다.
-    if (_disposed) return;
-    if (status == MyRatingsLoadStatus.error) {
-      refreshWarning = refreshFailedText;
-      notifyListeners();
-    }
-  }
-
-  /// 쓰기 실패를 [RatingWriteException]으로 바꿔 Dialog에 전달한다.
-  ///
-  /// 403(본인 평점 아님)·404(평점 없음)는 화면 목록이 서버와 어긋난 것이므로 다시 조회한다.
-  Future<Never> _failWrite(DioException error) async {
+  /// 쓰기 실패를 code별로 처리한 뒤 [RatingWriteException]으로 Dialog에 전달한다.
+  Future<Never> _failWrite(
+    DioException error, {
+    required int sessionVersion,
+    required int ratingId,
+  }) async {
     final failure = RatingWriteException.fromDio(error);
-    if (!_disposed && shouldRefreshAfterRatingError(error)) await load();
+    final code = failure.code;
+    if (isSessionExpiredCode(code)) {
+      await _auth.expireSession(version: sessionVersion);
+    } else if (code == 'RATING404_1') {
+      // 서버에 없는 평점이 화면에 남아 있으므로 목록에서 빼고 다시 그린다.
+      _store.remove(sessionVersion, ratingId);
+    }
     throw failure;
   }
 
-  /// 평점 수정. 실패하면 [RatingWriteException]을 던져 Dialog가 입력을 유지한 채 안내한다.
-  ///
-  /// comment는 생략하지 않고 항상 보낸다(null이면 후기 삭제).
+  /// 평점 수정. comment는 생략하지 않고 항상 보낸다(null이면 후기 삭제).
   Future<void> updateRating({
     required int ratingId,
     required int score,
     String? comment,
   }) async {
+    final sessionVersion = _auth.sessionVersion;
+    final RatingDto updated;
     try {
-      await _service.updateRating(
-        memberId: memberId,
+      updated = await _service.updateRating(
         ratingId: ratingId,
         score: score,
         comment: comment,
       );
     } on DioException catch (error) {
-      await _failWrite(error);
+      await _failWrite(
+        error,
+        sessionVersion: sessionVersion,
+        ratingId: ratingId,
+      );
+    } on StateError {
+      throw const RatingWriteException('수정 결과를 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.');
     }
-    if (_disposed) return;
-    await _refreshAfterWrite();
+    // 로그아웃·회원 전환 뒤 도착한 이전 세션 응답은 Store가 무시한다.
+    _store.upsert(sessionVersion, updated);
   }
 
-  /// 평점 하나 삭제(204). 실패하면 [RatingWriteException]을 던진다.
+  /// 평점 하나 삭제(v7은 200 + result null).
   Future<void> deleteRating(int ratingId) async {
+    final sessionVersion = _auth.sessionVersion;
     try {
-      await _service.deleteRating(memberId: memberId, ratingId: ratingId);
+      await _service.deleteRating(ratingId);
     } on DioException catch (error) {
-      await _failWrite(error);
+      await _failWrite(
+        error,
+        sessionVersion: sessionVersion,
+        ratingId: ratingId,
+      );
     } on StateError {
-      throw const RatingWriteException('삭제 결과를 확인하지 못했습니다. 목록을 다시 확인해 주세요.');
+      throw const RatingWriteException('삭제 결과를 확인하지 못했습니다. 잠시 후 다시 확인해 주세요.');
     }
-    if (_disposed) return;
-    await _refreshAfterWrite();
+    _store.remove(sessionVersion, ratingId);
   }
 
   void startSelecting() {
     if (isDeletingSelected) return;
     isSelecting = true;
     selectedRatingIds.clear();
-    notifyListeners();
+    _notify();
   }
 
-  /// 선택을 모두 해제하고 기본 목록으로 돌아간다.
   void cancelSelecting() {
     if (isDeletingSelected) return;
     isSelecting = false;
     selectedRatingIds.clear();
-    notifyListeners();
+    _notify();
   }
 
   void toggleSelected(int ratingId) {
     if (!isSelecting || isDeletingSelected) return;
     if (!selectedRatingIds.remove(ratingId)) selectedRatingIds.add(ratingId);
-    notifyListeners();
+    _notify();
   }
 
   /// 선택한 평점을 하나씩 삭제한다. 삭제하지 못한 개수를 돌려준다.
   ///
-  /// 성공한 항목만 선택에서 빼고, 실패한 항목은 선택 상태를 유지한다.
-  /// 모두 끝나면 목록을 다시 조회하며, GET 실패는 삭제 결과와 분리한다.
+  /// 세션이 만료되면(401) 남은 요청을 보내지 않고 멈춘다.
   Future<int> deleteSelectedRatings() async {
     if (isDeletingSelected || selectedRatingIds.isEmpty) return 0;
+    final sessionVersion = _auth.sessionVersion;
     isDeletingSelected = true;
-    notifyListeners();
+    _notify();
 
     var failed = 0;
     try {
       // 원본 Set을 순회하며 remove하면 ConcurrentModificationError가 나므로 복사본을 돈다.
-      for (final ratingId in selectedRatingIds.toList()) {
-        if (_disposed) return failed;
+      final targets = selectedRatingIds.toList();
+      for (var i = 0; i < targets.length; i++) {
+        final ratingId = targets[i];
+        if (_disposed || sessionVersion != _auth.sessionVersion) {
+          return failed + targets.length - i;
+        }
         try {
-          await _service.deleteRating(memberId: memberId, ratingId: ratingId);
+          await _service.deleteRating(ratingId);
           selectedRatingIds.remove(ratingId);
-        } on DioException {
-          failed++;
+          _store.remove(sessionVersion, ratingId);
+        } on DioException catch (error) {
+          final code = apiErrorCode(error);
+          if (isSessionExpiredCode(code)) {
+            await _auth.expireSession(version: sessionVersion);
+            return failed + targets.length - i;
+          }
+          if (code == 'RATING404_1') {
+            // 이미 없는 평점은 지우려던 목표와 같으므로 목록에서만 뺀다.
+            selectedRatingIds.remove(ratingId);
+            _store.remove(sessionVersion, ratingId);
+          } else {
+            failed++;
+          }
         } on StateError {
           failed++;
         }
       }
     } finally {
       isDeletingSelected = false;
-      // 예상하지 못한 오류에도 로딩을 해제한다.
-      if (!_disposed) notifyListeners();
+      _notify();
     }
     if (_disposed) return failed;
-
     if (failed == 0) isSelecting = false;
-    await _refreshAfterWrite();
+    await load(showLoading: false);
     return failed;
   }
 
@@ -222,6 +243,7 @@ class MyRatingsViewModel extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _requestVersion++;
+    _store.removeListener(_onStoreChanged);
     super.dispose();
   }
 }

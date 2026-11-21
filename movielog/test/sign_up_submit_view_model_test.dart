@@ -130,6 +130,6 @@ void main() {
 class _NetworkFailingSignUpService extends FakeSignUpService {
   @override
   Future<Never> signUp(CreateMemberRequest request) async {
-    throw fakeDioError('/v6/members');
+    throw fakeDioError('/v7/members');
   }
 }

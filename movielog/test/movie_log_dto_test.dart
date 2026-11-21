@@ -1,9 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:movielog/data/models/check_result.dart';
 import 'package:movielog/data/models/rating_dto.dart';
-import 'package:movielog/data/services/rating_api_service.dart';
-
-import 'support/fake_movie_log_services.dart';
 
 void main() {
   test('v5 중복 확인 응답은 Wrapper 없이 available을 그대로 읽는다', () {
@@ -38,21 +35,5 @@ void main() {
     });
 
     expect(rating.comment, isNull);
-  });
-
-  test('평점 조회 실패는 400·404·그 밖의 실패를 다른 문구로 구분한다', () {
-    const path = '/v6/members/1/ratings';
-    expect(
-      writeMyRatingsErrorMessage(fakeDioError(path, statusCode: 400)),
-      'memberId 형식을 다시 확인해 주세요.',
-    );
-    expect(
-      writeMyRatingsErrorMessage(fakeDioError(path, statusCode: 404)),
-      '존재하지 않는 회원입니다.',
-    );
-    expect(
-      writeMyRatingsErrorMessage(fakeDioError(path)),
-      '평점을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
-    );
   });
 }
